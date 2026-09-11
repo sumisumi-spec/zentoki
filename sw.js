@@ -1,4 +1,4 @@
-const CACHE = 'zentoki-v6';
+const CACHE = 'zentoki-v7';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './privacy.html', './tokushoho.html'];
 
 self.addEventListener('install', e => {

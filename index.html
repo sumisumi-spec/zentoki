@@ -188,6 +188,53 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .s-card.melody::before{background:radial-gradient(circle at 20% 40%,rgba(255,255,255,.35) 0 2px,transparent 3px),radial-gradient(circle at 45% 70%,rgba(255,255,255,.25) 0 2px,transparent 3px),radial-gradient(circle at 70% 30%,rgba(255,255,255,.3) 0 2px,transparent 3px),radial-gradient(circle at 85% 60%,rgba(255,255,255,.2) 0 2px,transparent 3px);animation:melody 10s ease-in-out infinite alternate}
 @keyframes melody{to{background-position:0 -10px,0 8px,0 -6px,0 10px}}
 #beatBox{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px}
+/* frequency scenes */
+.sc-head{display:flex;align-items:baseline;justify-content:space-between;margin:34px 0 12px}
+.sc-head h3{font-weight:300;font-size:15px;letter-spacing:.2em;margin:0}
+.sc-head small{font-family:var(--geo);font-size:10px;letter-spacing:.3em;color:var(--ink3)}
+.sc-grid{display:flex;flex-direction:column;gap:12px}
+.sc-card{position:relative;height:118px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.14);text-align:left;padding:0 20px;display:flex;align-items:center;justify-content:space-between;color:#fff;background:#0a0a0a center/cover no-repeat}
+.sc-card::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.72),rgba(0,0,0,.25) 60%,rgba(0,0,0,.55))}
+.sc-card>*{position:relative;z-index:1}
+.sc-card .l{display:flex;flex-direction:column;gap:4px}
+.sc-card .l small{font-size:10px;letter-spacing:.3em;color:var(--ink2)}
+.sc-card .l b{font-size:18px;font-weight:300;letter-spacing:.12em}
+.sc-card .hz{font-family:var(--geo);font-weight:200;font-size:34px;letter-spacing:.04em;white-space:nowrap}
+.sc-card .hz i{font-style:normal;font-size:14px;margin-left:3px;color:var(--ink2)}
+.sc-card.active{border-color:#fff;box-shadow:0 0 22px rgba(255,255,255,.16)}
+.sc-card .lock{position:absolute;top:10px;right:12px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;z-index:2}
+.sc-card .lock svg{width:12px;height:12px;fill:none;stroke:#fff;stroke-width:1.5}
+.sc-card.moon{background-image:linear-gradient(180deg,#0a1230 0%,#26366b 45%,#c4855a 62%,#1b1c22 70%,#050506 100%)}
+.sc-card.eve{background-image:radial-gradient(circle at 30% 40%,rgba(255,190,110,.45),transparent 30%),radial-gradient(circle at 70% 60%,rgba(255,170,80,.35),transparent 25%),linear-gradient(180deg,#0e1526,#1a1108 70%,#050403)}
+#sceneOverlay{position:fixed;inset:0;z-index:6;background:#000;display:flex;flex-direction:column;justify-content:flex-end;color:#fff}
+#sceneOverlay .bg{position:absolute;inset:0;background:#000 center/cover no-repeat;animation:scIn 1.6s ease-out both}
+#sceneOverlay .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.35) 55%,rgba(0,0,0,.92) 80%,#000 100%)}
+@keyframes scIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+#sceneOverlay .bg.moon{background-image:linear-gradient(180deg,#070c22 0%,#1c2a5c 38%,#5a5a7a 52%,#c8875a 58%,#3a2a24 63%,#0a0a0d 72%,#000 100%)}
+#sceneOverlay .bg.moon::before{content:"";position:absolute;left:0;right:0;top:60%;height:16%;background:linear-gradient(180deg,transparent 0,#08090d 30%);clip-path:polygon(0 60%,8% 48%,15% 55%,24% 35%,33% 50%,41% 30%,52% 46%,60% 26%,70% 44%,78% 34%,88% 50%,100% 40%,100% 100%,0 100%)}
+#sceneOverlay .bg.eve{background-image:radial-gradient(circle at 28% 34%,rgba(255,200,120,.55),transparent 22%),radial-gradient(circle at 62% 46%,rgba(255,180,90,.4),transparent 18%),radial-gradient(circle at 45% 62%,rgba(255,160,70,.3),transparent 20%),radial-gradient(circle at 75% 25%,rgba(255,220,160,.25),transparent 14%),linear-gradient(180deg,#0b1224 0%,#1a1a2e 40%,#2a1a0a 60%,#000 100%)}
+#sceneOverlay .top{position:absolute;top:calc(14px + env(safe-area-inset-top));left:14px;right:14px;display:flex;justify-content:space-between;z-index:2}
+#sceneOverlay .top button{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.25);backdrop-filter:blur(8px);color:#fff;display:flex;align-items:center;justify-content:center}
+#sceneOverlay .top svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:1.4;stroke-linecap:round}
+#sceneOverlay .num{position:absolute;left:0;right:0;top:9%;height:48%;display:flex;align-items:center;justify-content:center;z-index:1;pointer-events:none}
+#sceneOverlay .num svg{width:100%;height:100%;overflow:visible}
+#sceneOverlay .num text{font-family:var(--geo);font-weight:200;fill:none;stroke:rgba(255,255,255,.92);stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:2600;stroke-dashoffset:2600}
+#sceneOverlay.on .num text{animation:draw 7s cubic-bezier(.3,.1,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#sceneOverlay .hzl{position:absolute;right:26px;top:53%;font-family:var(--geo);font-weight:200;font-size:26px;letter-spacing:.1em;color:rgba(255,255,255,.75);z-index:1}
+#sceneOverlay .body{position:relative;z-index:2;padding:0 24px calc(28px + env(safe-area-inset-bottom))}
+#sceneOverlay .ctl{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+#sceneOverlay .play{width:64px;height:64px;border-radius:50%;border:1px solid rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;color:#fff}
+#sceneOverlay .play svg{width:22px;height:22px;fill:#fff}
+#sceneOverlay .mini{display:flex;gap:6px}
+#sceneOverlay .mini button{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+#sceneOverlay .mini svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round}
+#sceneOverlay .cat{font-size:10px;letter-spacing:.3em;color:var(--ink2)}
+#sceneOverlay .ttl{font-size:20px;font-weight:300;letter-spacing:.14em;margin:6px 0 8px}
+#sceneOverlay .dsc{font-size:12px;line-height:1.8;color:var(--ink2)}
+#sceneOverlay .lab{font-size:11px;letter-spacing:.2em;color:var(--ink3);margin:18px 0 8px}
+#sceneOverlay .seg button{padding:9px 0;font-size:12px}
+#sceneOverlay .note{font-size:11px;color:var(--ink3);line-height:1.7;margin-top:14px}
 #beatSeg button{padding:10px 0;font-size:12px}
 #beginSeg button{flex:1 1 30%;padding:10px 0;font-size:13px}
 .s-vol{display:flex;align-items:center;gap:16px;margin-top:30px}
@@ -518,6 +565,9 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
     <button class="s-play" id="sPlay" aria-label="再生 / 停止"><svg viewBox="0 0 24 24" id="sPlayIcon"><path d="M8 5v14l11-7z"/></svg></button>
   </div>
   <div class="s-grid" id="sGrid"></div>
+  <div class="sc-head"><h3>周波数</h3><small>FREQUENCY</small></div>
+  <div class="sc-grid" id="sceneGrid"></div>
+  <p class="s-hint" style="margin-top:10px">情景と、ひとつの周波数。左右で少し違う高さの音の差が、うなりとして感じられます。<b>イヤホンで聴いてください</b>。</p>
   <div id="beatBox" hidden>
     <div class="seg" id="beatSeg">
       <button data-beat="2">ディープ<small>2Hz</small></button><button data-beat="6">瞑想<small>6Hz</small></button><button data-beat="10">リラックス<small>10Hz</small></button><button data-beat="16">フォーカス<small>16Hz</small></button>
@@ -604,6 +654,24 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
   <button class="tab" data-view="viewLog"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-8"/></svg>記録</button>
 </div></nav>
 
+<div id="sceneOverlay" role="dialog" aria-modal="true" aria-label="周波数" hidden>
+  <div class="bg" id="scBg"></div>
+  <div class="top"><button id="scClose" aria-label="閉じる"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><button id="scSleep" aria-label="自動停止"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></button></div>
+  <div class="num"><svg viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet"><text id="scNum" x="200" y="300" text-anchor="middle" font-size="300">12</text></svg></div>
+  <div class="hzl">Hz</div>
+  <div class="body">
+    <div class="ctl">
+      <button class="play" id="scPlay" aria-label="再生 / 停止"><svg viewBox="0 0 24 24" id="scPlayIcon"><path d="M8 5v14l11-7z"/></svg></button>
+      <div class="mini"><button id="scVolDown" aria-label="音量を下げる"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><button id="scVolUp" aria-label="音量を上げる"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
+    </div>
+    <div class="cat" id="scCat">集中</div>
+    <div class="ttl" id="scTitle">欠けゆく月</div>
+    <div class="dsc" id="scDesc"></div>
+    <div class="lab">周波数の強さ</div>
+    <div class="seg" id="scStr"><button data-f="off">オフ</button><button data-f="low">低</button><button data-f="mid">普通</button><button data-f="high">高</button></div>
+    <p class="note">効果の感じ方には個人差があります。光や音の刺激に敏感な方、てんかんの既往がある方は使用を控えてください。</p>
+  </div>
+</div>
 <div id="medOverlay" role="dialog" aria-modal="true" aria-label="瞑想" hidden>
   <div class="breath" id="breath">
     <div class="o"></div><div class="c" id="bC"></div><div class="r" id="bR"></div>
@@ -796,6 +864,9 @@ const EN = {
   '読み込めませんでした。書き出したテキストか確認してください':'Could not read it. Make sure it is exported text','ZENTOKIのバックアップではないようです':'This does not look like a ZENTOKI backup','%1件の記録を読み込みました':'%1 records imported','新しい記録はありませんでした（重複は除外）':'Nothing new to import (duplicates skipped)','書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください':'Exported. If the download does not start, use “Copy as text”','コピーしました。メモなどに貼り付けて保存してください':'Copied. Paste it somewhere safe','コピーできませんでした':'Could not copy','断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。':'Delete all fasting, meditation and weight records? This cannot be undone.','削除しました':'Deleted',
   '通知はアプリを閉じていても、目標やステージの時刻に届きます。':'Notifications arrive at goal and stage times even when the app is closed.','音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。':'Sound plays while the app is open. It stops when the screen locks or you switch apps.',
   'お支払いはAirペイの決済ページで行います。お支払い後に届く「支払完了メール」を':'Payment is handled on the AirPay checkout page. After paying, forward the payment-confirmation email to','に転送してください。ライセンスキーを返信します（通常24時間以内）。':'and we will reply with your licence key (usually within 24 hours).','こちら':'this address','（Airペイの支払完了メールをこのまま転送してください）':'(Please forward the AirPay payment-confirmation email as is.)','お支払い後、支払完了メールを転送してください。キーをお送りします':'After paying, forward the confirmation email and we will send your key','メールや購入完了ページで受け取ったキー（ZK- で始まる文字列）を入力してください。':'Enter the key you received by email or on the purchase page (it starts with ZK-).',
+  '周波数':'Frequency','周波数の強さ':'Tone strength','低':'Low','普通':'Normal','高':'High','集中':'Focus','睡眠':'Sleep','深い眠り':'Deep sleep','欠けゆく月':'Waning Moon','光の届く深さ':'Where Light Reaches','洞窟の滝':'Cave Falls','聖夜':'Christmas Eve','砂漠の星河':'Desert Milky Way','音量を下げる':'Volume down','音量を上げる':'Volume up',
+  '情景と、ひとつの周波数。左右で少し違う高さの音の差が、うなりとして感じられます。':'One scene, one frequency. The small difference between the left and right tones is felt as a slow beat.','イヤホンで聴いてください。':'Listen with earphones.',
+  '効果の感じ方には個人差があります。光や音の刺激に敏感な方、てんかんの既往がある方は使用を控えてください。':'Effects vary from person to person. Avoid if you are sensitive to light or sound, or have a history of epilepsy.',
   'キーの形式が違います':'That key format is not right','この版ではライセンスキーを使えません':'Licence keys are not available in this build','ZENTOKI Plus が有効になりました':'ZENTOKI Plus is active','このキーは無効になっています':'This key has been revoked','キーが確認できませんでした':'Could not verify the key','通信できませんでした。あとでもう一度お試しください':'No connection. Please try again later','商品を読み込めませんでした':'Could not load the product','購入を完了できませんでした':'Purchase could not be completed','購入を復元しました':'Purchase restored','復元できる購入が見つかりませんでした':'No purchase to restore','復元できませんでした':'Could not restore','準備中です':'Coming soon',
   '明日':'Tomorrow','昨日':'Yesterday',
 };
@@ -841,7 +912,7 @@ let state = load('ft.state', { preset:'16:8', customHours:16, start:null, lastEn
 let history = load('ft.history', []);
 let settings = load('ft.settings', { notify:false, stageNotify:false, ripple:true });
 if (settings.ripple === undefined) settings.ripple = true;
-settings.sound = Object.assign({ mode:'rain', on:false, volume:60, chime:true, beat:6, layerWater:false, sleep:0 }, settings.sound || {});
+settings.sound = Object.assign({ mode:'rain', on:false, volume:60, chime:true, beat:6, layerWater:false, sleep:0, freq:'mid' }, settings.sound || {});
 if (settings.sound.mode === 'off') { settings.sound.mode = 'rain'; settings.sound.on = false; }
 if (settings.sound.mode === 'water') settings.sound.mode = 'stream';
 if (settings.sound.on === undefined) settings.sound.on = false;
@@ -853,7 +924,7 @@ const PLUS = {
   // manualKey: true = 決済後にキーをメールで送る運用（Airペイ）。false = Stripe → thanks.html で自動発行。
   web: { paymentLink: 'https://web.online.airpayment.jp/payment?planId=PLqB15OEGREuebjqsd', verifyUrl: '', manualKey: true, supportEmail: '' },
   ios: { rcApiKey: '', entitlement: 'plus', product: 'app.zentoki.plus' },
-  sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody'],
+  sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody', 'eve', 'cave', 'stars'],
   breaths: ['box', '4-8', '5-10', '6-12', '7-14'],
 };
 // Web billing turns on only when BOTH the payment link and the key-verify worker are set (a link without a way to activate would take money for nothing).
@@ -1324,7 +1395,31 @@ const audio = (() => {
       amb.timer = setTimeout(crackle, 70 + Math.random() * 260); };
     amb.timer = setTimeout(crackle, 200);
   }
-  const ambKey = () => settings.sound.mode === 'binaural' ? `binaural:${settings.sound.beat}:${settings.sound.layerWater ? 1 : 0}` : settings.sound.mode;
+  // frequency scenes: one binaural beat (carrier ± hz/2) + a chord pad tuned to the scene + an optional texture layer
+  function buildScene(out, nodes, sc) {
+    const str = { off: 0, low: 0.5, mid: 1, high: 1.6 }[settings.sound.freq] ?? 1;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = sc.lp || 700; lp.Q.value = 0.3; lp.connect(out); nodes.push(lp);
+    every(out, 2000, () => 8000 + Math.random() * 3000, () => ripplePulse(1, 0.3));
+    if (str > 0) {
+      const bg = ctx.createGain(); bg.gain.value = 0.16 * str; bg.connect(lp); nodes.push(bg);
+      const bl = ctx.createOscillator(); bl.frequency.value = 0.06; const blg = ctx.createGain(); blg.gain.value = 0.04 * str; bl.connect(blg); blg.connect(bg.gain); bl.start(); nodes.push(bl, blg);
+      [[-1, sc.carrier - sc.hz / 2], [1, sc.carrier + sc.hz / 2]].forEach(([pan, f]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+        if (pn) { pn.pan.value = pan; o.connect(pn); pn.connect(bg); nodes.push(pn); } else o.connect(bg);
+        o.start(); nodes.push(o);
+      });
+      if (sc.sub) { const sub = ctx.createOscillator(); sub.frequency.value = sc.sub; const sg = ctx.createGain(); sg.gain.value = 0.08 * str; sub.connect(sg); sg.connect(lp); sub.start(); nodes.push(sub, sg); }
+    }
+    (sc.pad || []).forEach(([f, v], i) => {
+      const o = ctx.createOscillator(); o.type = i % 2 ? 'triangle' : 'sine'; o.frequency.value = f;
+      const g = ctx.createGain(); g.gain.value = v;
+      const l = ctx.createOscillator(); l.frequency.value = 0.04 + i * 0.013; const lg = ctx.createGain(); lg.gain.value = v * 0.45; l.connect(lg); lg.connect(g.gain);
+      o.connect(g); g.connect(lp); g.connect(verb); o.start(); l.start(); nodes.push(o, g, l, lg);
+    });
+    if (sc.layer) { const lg = ctx.createGain(); lg.gain.value = sc.layerGain || 0.35; lg.connect(out); nodes.push(lg); ({ ocean: buildOcean, stream: buildWater, forest: buildForest, rain: buildRain }[sc.layer] || (() => {}))(lg, nodes); }
+  }
+  const ambKey = () => settings.sound.mode === 'binaural' ? `binaural:${settings.sound.beat}:${settings.sound.layerWater ? 1 : 0}` : (SCENES.some(x => x.id === settings.sound.mode) ? `scene:${settings.sound.mode}:${settings.sound.freq}` : settings.sound.mode);
   function startAmb(mode) {
     if (!ensure() || mode === 'off') { stopAmb(); return; }
     const key = ambKey(); if (ambMode === key) return; stopAmb();
@@ -1338,6 +1433,7 @@ const audio = (() => {
     else if (mode === 'fire') buildFire(out, nodes);
     else if (mode === 'drone') buildDrone(out, nodes);
     else if (mode === 'melody') buildMelody(out, nodes);
+    else if (SCENES.some(x => x.id === mode)) buildScene(out, nodes, SCENES.find(x => x.id === mode));
     else { buildBinaural(out, nodes, Number(settings.sound.beat) || 6); if (settings.sound.layerWater) buildWater(out, nodes, 0.45); }
   }
   // a soft bell used for ripples and stage chimes
@@ -1676,16 +1772,28 @@ const SOUNDS = [
   { id:'binaural', ja:'バイノーラル', en:'BINAURAL', icon:'<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="7" rx="1.5"/><rect x="17" y="13" width="4" height="7" rx="1.5"/>' },
   { id:'melody',   ja:'メロディ', en:'MELODY',   icon:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>' },
 ];
+// frequency scenes. hz = binaural difference actually produced (shown honestly), carrier = centre tone, pad = chord under it
+const SCENES = [
+  { id:'moon',  hz:12, cat:'集中', ja:'欠けゆく月', en:'Waning Moon', desc:'薄明の稜線に、細い月。考えを一本に絞りたいときの、乾いた静けさ。', descEn:'A slender moon over a twilight ridge. Dry, clear quiet for narrowing your thoughts to one line.', carrier:100, sub:43.7, lp:320, pad:[[82.5,.05],[123.5,.03],[165,.02]] },
+  { id:'deep',  hz:9,  cat:'リラックス', ja:'光の届く深さ', en:'Where Light Reaches', desc:'水面の光が、ゆっくり降りてくる。肩の力を抜いて、ただ浮かぶ。', descEn:'Sunlight sinking slowly through water. Let your shoulders drop and simply float.', carrier:180, lp:900, pad:[[110,.06],[165,.04],[220,.035],[277.2,.02]], layer:'ocean', layerGain:.3, img:'assets/scenes/deep.jpg' },
+  { id:'cave',  hz:6,  cat:'瞑想', ja:'洞窟の滝', en:'Cave Falls', desc:'岩の奥に落ちる水と、差し込む光。呼吸だけが残る場所。', descEn:'Water falling deep in the rock, and one shaft of light. A place where only breath remains.', carrier:150, lp:800, pad:[[98,.05],[146.8,.04],[196,.03],[293.7,.015]], layer:'stream', layerGain:.28, img:'assets/scenes/cave.jpg' },
+  { id:'eve',   hz:7,  cat:'睡眠', ja:'聖夜', en:'Christmas Eve', desc:'琥珀色のキャンドルの下で。今日をそっと閉じるための、内省的なトーン。', descEn:'Under amber candlelight. An inward tone for closing the day gently.', carrier:175, lp:900, pad:[[104,.07],[130.9,.045],[155.3,.04],[247,.03],[370,.02],[415.3,.015]] },
+  { id:'stars', hz:3,  cat:'深い眠り', ja:'砂漠の星河', en:'Desert Milky Way', desc:'砂丘の上に、天の川。何も考えなくていい夜へ。', descEn:'The Milky Way rising over dunes. Into a night where nothing needs thinking.', carrier:120, sub:40, lp:500, pad:[[65.4,.06],[98,.04],[130.8,.03],[196,.015]], img:'assets/scenes/stars.jpg' },
+];
 const sName = x => lang === 'en' ? x.en.charAt(0) + x.en.slice(1).toLowerCase() : x.ja;
 const sSub = x => lang === 'en' ? x.ja : x.en;
 let sleepTimer = null;
 function armSleep() { clearTimeout(sleepTimer); if (settings.sound.on && settings.sound.sleep > 0) sleepTimer = setTimeout(() => { settings.sound.on = false; persist(); audio.apply(); renderSound(); toast(T('サウンドを止めました。おやすみなさい')); }, settings.sound.sleep * 60000); }
 function renderSound() {
   if (lockedSound(settings.sound.mode)) { settings.sound.mode = 'rain'; settings.sound.on = false; save('ft.settings', settings); if (typeof audio !== 'undefined') audio.apply(); }
-  const cur = SOUNDS.find(x => x.id === settings.sound.mode) || SOUNDS[0];
+  const curScene = SCENES.find(x => x.id === settings.sound.mode);
+  const cur = curScene ? { ja: curScene.ja, en: (curScene.hz + 'HZ · ' + T(curScene.cat)).toUpperCase() } : (SOUNDS.find(x => x.id === settings.sound.mode) || SOUNDS[0]);
+  $('#sceneGrid').innerHTML = SCENES.map(x => `<button class="sc-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" ${x.img ? `style="background-image:url(${x.img.replace('.jpg', '-thumb.jpg')})"` : ''} aria-label="${T(x.ja)} ${x.hz}Hz${lockedSound(x.id) ? T('（Plus）') : ''}">${lockedSound(x.id) ? '<span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>' : ''}<span class="l"><small>${T(x.cat)}</small><b>${lang === 'en' ? x.en : x.ja}</b></span><span class="hz">${x.hz}<i>Hz</i></span></button>`).join('');
+  $('#sceneGrid').querySelectorAll('.sc-card').forEach(b => b.onclick = () => { if (lockedSound(b.dataset.id)) { openPaywall('sound'); return; } openScene(b.dataset.id); });
   $('#sGrid').innerHTML = SOUNDS.map(x => `<button class="s-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" aria-label="${sName(x)}${lockedSound(x.id) ? T('（Plus）') : ''}">${lockedSound(x.id) ? '<span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>' : ''}<svg viewBox="0 0 24 24">${x.icon}</svg><b>${sName(x)}</b><small>${sSub(x)}</small></button>`).join('');
   $('#sGrid').querySelectorAll('.s-card').forEach(b => b.onclick = () => { if (lockedSound(b.dataset.id)) { openPaywall('sound'); return; } const same = settings.sound.mode === b.dataset.id; settings.sound.mode = b.dataset.id; if (!same || !settings.sound.on) settings.sound.on = true; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); ripple.burst(2); });
-  $('#sNowJa').textContent = sName(cur); $('#sNowEn').textContent = sSub(cur);
+  $('#sNowJa').textContent = curScene ? (lang === 'en' ? curScene.en : curScene.ja) : sName(cur); $('#sNowEn').textContent = curScene ? cur.en : sSub(cur);
+  if (!$('#sceneOverlay').hidden) renderScene();
   $('#sHero').classList.toggle('on', settings.sound.on);
   $('#sPlayIcon').innerHTML = settings.sound.on ? '<rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/>' : '<path d="M8 5v14l11-7z"/>';
   $('#beatBox').hidden = settings.sound.mode !== 'binaural';
@@ -1696,6 +1804,35 @@ function renderSound() {
   $('#sleepVal').textContent = settings.sound.sleep ? T('%1分', settings.sound.sleep) : T('オフ');
 }
 $('#sPlay').onclick = () => { settings.sound.on = !settings.sound.on; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); if (settings.sound.on) ripple.burst(2); };
+// ----- frequency scene player -----
+let sceneId = null;
+function openScene(id) {
+  const sc = SCENES.find(x => x.id === id); if (!sc) return;
+  sceneId = id;
+  const same = settings.sound.mode === id; settings.sound.mode = id; if (!same || !settings.sound.on) settings.sound.on = true;
+  persist(); audio.prime(); audio.apply(); armSleep();
+  const ov = $('#sceneOverlay'); ov.hidden = false; ov.classList.remove('on');
+  const bg = $('#scBg'); bg.className = 'bg ' + (sc.img ? '' : sc.id); bg.style.backgroundImage = sc.img ? `url(${sc.img})` : '';
+  bg.style.animation = 'none'; void bg.offsetWidth; bg.style.animation = '';
+  $('#scNum').textContent = String(sc.hz);
+  requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('on')));
+  renderScene(); renderSound(); ripple.burst(2);
+  if (native) native.keepAwake(true);
+}
+function closeScene() { $('#sceneOverlay').hidden = true; sceneId = null; if (native) native.keepAwake(false); renderSound(); }
+function renderScene() {
+  const sc = SCENES.find(x => x.id === sceneId); if (!sc) return;
+  const playing = settings.sound.on && settings.sound.mode === sc.id;
+  $('#scPlayIcon').innerHTML = playing ? '<rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/>' : '<path d="M8 5v14l11-7z"/>';
+  $('#scCat').textContent = T(sc.cat); $('#scTitle').textContent = lang === 'en' ? sc.en : sc.ja; $('#scDesc').textContent = lang === 'en' ? sc.descEn : sc.desc;
+  $('#scStr').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.f === settings.sound.freq));
+}
+$('#scClose').onclick = closeScene;
+$('#scPlay').onclick = () => { const sc = SCENES.find(x => x.id === sceneId); if (!sc) return; if (settings.sound.mode !== sc.id) { settings.sound.mode = sc.id; settings.sound.on = true; } else settings.sound.on = !settings.sound.on; persist(); audio.prime(); audio.apply(); armSleep(); renderScene(); renderSound(); if (settings.sound.on) ripple.burst(2); };
+$('#scStr').querySelectorAll('button').forEach(b => b.onclick = () => { settings.sound.freq = b.dataset.f; persist(); audio.apply(); renderScene(); });
+$('#scSleep').onclick = () => $('#sleepRow').click();
+$('#scVolDown').onclick = () => { settings.sound.volume = Math.max(0, settings.sound.volume - 10); persist(); audio.apply(); renderSound(); toast(settings.sound.volume + '%'); };
+$('#scVolUp').onclick = () => { settings.sound.volume = Math.min(100, settings.sound.volume + 10); persist(); audio.apply(); renderSound(); toast(settings.sound.volume + '%'); };
 $('#beatSeg').querySelectorAll('button').forEach(b => b.onclick = () => { settings.sound.beat = Number(b.dataset.beat); persist(); audio.apply(); renderSound(); });
 $('#layerToggle').onchange = e => { settings.sound.layerWater = e.target.checked; persist(); audio.apply(); };
 $('#volInput').oninput = e => { settings.sound.volume = Number(e.target.value); $('#volPct').textContent = settings.sound.volume + '%'; save('ft.settings', settings); audio.apply(); };

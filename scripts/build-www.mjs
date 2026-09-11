@@ -5,4 +5,5 @@ rmSync(out, { recursive: true, force: true }); mkdirSync(out);
 for (const f of ['index.html', 'sw.js', 'manifest.webmanifest', 'privacy.html', 'thanks.html', 'tokushoho.html', 'icon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'og.png', 'og.svg']) {
   if (existsSync(f)) cpSync(f, `${out}/${f}`);
 }
+if (existsSync('assets')) cpSync('assets', `${out}/assets`, { recursive: true });
 console.log('www/ ready');
