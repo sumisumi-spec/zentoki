@@ -44,8 +44,8 @@ Airペイのオンライン決済は「決済リンクを作って送るだけ�
    npx wrangler deploy                        # https://zentoki-license.<account>.workers.dev
    ```
 3. **アプリに設定**（`index.html` の `const PLUS`）
-   - `web.paymentLink`: Airペイの決済リンク
-   - `web.verifyUrl`: Worker の URL
+   - `web.paymentLink`: Airペイの決済リンク（設定済み）
+   - `web.verifyUrl`: Worker の URL（**これが入るまでロックも購入画面も出ません**。決済リンクだけでは課金は始まりません）
    - `web.manualKey`: `true`（そのまま）
    - `web.supportEmail`: キー申請を受け取るメールアドレス（購入画面に表示され、タップでメールが立ち上がる）
    - `tokushoho.html`: 【 】の箇所（事業者名・責任者・所在地・連絡先）を記入。**これは法律上の必須表示**。

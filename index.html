@@ -851,12 +851,13 @@ const PLUS = {
   price: '¥500',
   // paymentLink: Airペイ オンライン決済の決済リンク（または Stripe Payment Link）。verifyUrl: worker/ の URL。
   // manualKey: true = 決済後にキーをメールで送る運用（Airペイ）。false = Stripe → thanks.html で自動発行。
-  web: { paymentLink: '', verifyUrl: '', manualKey: true, supportEmail: '' },
+  web: { paymentLink: 'https://web.online.airpayment.jp/payment?planId=PLqB15OEGREuebjqsd', verifyUrl: '', manualKey: true, supportEmail: '' },
   ios: { rcApiKey: '', entitlement: 'plus', product: 'app.zentoki.plus' },
   sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody'],
   breaths: ['box', '4-8', '5-10', '6-12', '7-14'],
 };
-PLUS.enabled = !!(PLUS.web.paymentLink || PLUS.ios.rcApiKey) || load('ft.plusDebug', false);
+// Web billing turns on only when BOTH the payment link and the key-verify worker are set (a link without a way to activate would take money for nothing).
+PLUS.enabled = !!((PLUS.web.paymentLink && PLUS.web.verifyUrl) || PLUS.ios.rcApiKey) || load('ft.plusDebug', false);
 let plus = load('ft.plus', { active: false, source: null, since: null, grant: null });
 const isPlus = () => !PLUS.enabled || !!plus.active;
 const lockedSound = id => PLUS.enabled && !plus.active && PLUS.sounds.includes(id);
