@@ -561,7 +561,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
     </div>
     <div class="cal-sum" id="calSum"></div>
     <div class="cal" id="cal"></div>
-    <div class="cal-legend"><span><i></i>断食した日</span><span><i class="g"></i>目標達成</span><span><i class="m"></i>瞑想</span></div>
+    <div class="cal-legend"><span><i></i>断食した日</span><span><i class="g"></i>目標達成</span><span><i class="m"></i>瞑想した日</span></div>
     <div class="cal-day" id="calDay"></div>
     <ul class="history" id="history" hidden></ul>
     <div class="empty" id="historyEmpty" hidden>まだ記録がありません</div>
@@ -673,6 +673,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 <dialog id="settingsDialog">
   <div class="about"><div class="wm">ZENTOKI</div><div class="copy">自分を整える時間を、日常に。</div><div class="sub">断食と瞑想を、ひとつのアプリで。</div><div class="ver">VERSION 1.4</div></div>
   <h3>設定</h3>
+  <div class="plus-row" style="margin:0 0 6px;border-top:0"><span>言語 / Language</span><div class="seg" id="langSeg" style="width:150px"><button data-l="ja">日本語</button><button data-l="en">English</button></div></div>
   <label class="toggle"><span>目標達成を通知</span><input type="checkbox" id="notifyToggle"><span class="sw"></span></label>
   <label class="toggle"><span>ステージ到達を通知</span><input type="checkbox" id="stageNotifyToggle"><span class="sw"></span></label>
   <p class="hint" id="notifyHint" style="margin-top:6px">通知はZENTOKIを開いている間（ホーム画面に追加したアプリを含む）に届きます。iPhoneでは「ホーム画面に追加」したアプリからのみ通知できます。</p>
@@ -736,6 +737,78 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
+
+// ---------- storage ----------
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+// ---------- i18n (Japanese is the source; EN maps Japanese strings to English) ----------
+let lang = load('ft.lang', 'ja'); if (lang !== 'en') lang = 'ja';
+const EN = {
+  // navigation / headings
+  'ホーム':'Home','サウンド':'Sound','記録':'Log','設定':'Settings','断食':'Fasting','瞑想':'Meditation','確認':'Confirm','閉じる':'Close','キャンセル':'Cancel','保存':'Save','変更':'Edit','開始':'Start','目標':'Goal','終了':'End','削除':'Delete','スキップ':'Skip','次へ':'Next','はじめる':'Begin','あとで':'Later','残す':'Keep','なし':'None','オフ':'Off','自動':'Auto','合計':'Total','平均':'Average','最長':'Longest','回':'fasts','連続日':'day streak','断食日数':'days','最長連続':'best streak','達成率':'goal rate',
+  '食を整え、今のわたしに還る。':'Settle your meals. Return to yourself.','心に、余白を。':'Make room in your mind.','静けさを、選ぶ。':'Choose your quiet.','より静かな':'A quieter','今日を。':'today.','ふりかえる。':'Look back.',
+  '断食をはじめる':'Start fasting','断食を終了':'End fast','断食プラン':'Fasting plan','時間の断食':'hour fast','経過時間':'Elapsed','目標達成':'Goal reached','あと':'left','目標を超えて':'beyond goal by','食事の時間':'Eating window','次の断食の目安':'Next fast around',
+  'いつから始めますか':'When did you start?','今から':'Now','30分前':'30 min ago','1時間前':'1 hour ago','2時間前':'2 hours ago','3時間前':'3 hours ago','6時間前':'6 hours ago','最後に食べ終えた時刻':'Time you last ate','開始時刻':'Start time','断食を始めた時刻':'When the fast began',
+  '体の変化':'What your body is doing','断食を始めると、経過時間に応じて体の中で起きている変化の目安を表示します。':'Once you start a fast, this shows a general guide to what is happening in your body over time.','次のステージ':'Next stage','最終ステージです':'Final stage','無理をせず終了してください':'Listen to your body and end when you need to',
+  '消化中':'Digesting','血糖値が上がり、インスリンが分泌されます。食べたものからエネルギーを得ている状態。':'Blood sugar rises and insulin is released. Your body runs on the food you just ate.',
+  '血糖値が安定':'Blood sugar settles','血糖とインスリンが下がり始め、体が蓄えたグリコーゲンを使い始めます。':'Blood sugar and insulin begin to fall, and stored glycogen is used.',
+  '脂肪燃焼スタート':'Fat burning begins','グリコーゲンが減り、脂肪をエネルギーとして分解し始めます。':'Glycogen runs low and the body starts breaking down fat for energy.',
+  'ケトーシス開始':'Ketosis begins','肝臓がケトン体を作り始めます。脂肪燃焼が本格化する目安。':'The liver starts producing ketones. A rough marker for fat burning in earnest.',
+  'オートファジー活性化':'Autophagy rises','細胞が古いタンパク質を分解・再利用する働きが高まると言われています。':'Cells are thought to step up recycling of old proteins.',
+  '成長ホルモン増加':'Growth hormone rises','成長ホルモンの分泌が増え、筋肉の維持や修復を助けます。':'Growth hormone increases, supporting muscle maintenance and repair.',
+  '深いオートファジー':'Deep autophagy','ケトン体がさらに増加。長期断食は体調を見ながら、無理をしないでください。':'Ketones rise further. For long fasts, watch how you feel and never push through.',
+  'はじめて':'starter','軽め':'gentle','定番':'classic','1日1食':'one meal','カスタム':'Custom',
+  // meditation
+  '瞑想をはじめる':'Start meditation','呼吸を整える':'Settle your breath','ゆっくり、吸って。吐いて。':'Slowly, in. And out.','マインドフルネス':'Mindfulness','リラックス':'Relax','ガイドなし':'No guide','ボックス':'Box','ゆっくり':'slow','止める':'Hold','秒数を指定':'set seconds','吸う':'Inhale','吐く':'Exhale','間隔ベル':'Interval bell','1分':'1 min','3分':'3 min','5分':'5 min','一時停止':'Pause','再開':'Resume','おつかれさま':'Well done','呼吸に意識を向けて':'Rest your attention on the breath',
+  '呼吸を変えずに観察する、あるいは一定のリズムで整える練習です。':'Observe the breath as it is, or settle it into a steady rhythm.','吐く息を吸う息の2倍の長さにします。長いほど落ち着きますが、苦しければ短いものから始めてください。':'Exhale for twice as long as you inhale. Longer is calmer, but start short if it feels hard.',
+  '静かに座る時間を、記録に残していきます':'Your quiet minutes will be kept here','ここで終了しますか？ 1分以上なら記録に残ります。':'End here? Sessions of a minute or more are saved.','短い時間でも、座れたことに変わりはありません':'Even a short sit counts.','瞑想を終えました':'Meditation complete','おつかれさま。ゆっくり戻ってきてください。':'Well done. Come back slowly.',
+  // sound
+  '再生 / 停止':'Play / Pause','音量':'Volume','自動停止':'Auto-stop','節目でチャイムを鳴らす':'Chime at milestones','水音を重ねる':'Layer water sounds','ディープ':'Deep','フォーカス':'Focus','イヤホンで聴いてください':'Use headphones',
+  '左右で少し違う高さの音を流し、その差をうなりとして感じる音です。':'Slightly different pitches play in each ear, and the difference is felt as a gentle beat. ','。スピーカーでは普通のドローンとして聞こえます。効果の感じ方には個人差があります。光や音の刺激に敏感な方、てんかんの既往がある方は使用を控えてください。':'. Through speakers it sounds like an ordinary drone. Effects vary from person to person. Avoid if you are sensitive to light or sound stimulation or have a history of epilepsy.',
+  '音はアプリを開いている間だけ流れます。iPhoneでは画面ロックや他のアプリへの切り替えで止まります。マナーモード中は鳴りません。':'Sound plays while ZENTOKI is open. On iPhone it stops when the screen locks or you switch apps, and stays silent in silent mode.',
+  // log
+  '日付をタップすると、その日の記録が見られます':'Tap a date to see that day','断食した日':'fasted','瞑想した日':'meditated','すべての断食の記録':'All fasting records','さらに表示':'Show more','まだ記録がありません':'No records yet','瞑想の記録':'Meditation log','すべての記録':'All records','早めに終了':'ended early','記録なし':'no record','別の日に終了した断食の時間です':'Hours from a fast that ended on another day','この日は記録がありません':'Nothing recorded on this day',
+  // weight
+  '体重':'Weight','＋ 記録する':'+ Log weight','ヘルスケア取り込み':'Import from Health','記録すると推移が表示されます':'Your trend appears once you log','すべて表示':'Show all','目標を設定':'Set goal','体重を記録':'Log weight','日付':'Date','時刻':'Time','開始時の体重 kg':'Starting weight kg','目標体重 kg':'Goal weight kg','身長 cm（BMI表示に使用・任意）':'Height cm (optional, for BMI)','開始時の体重を空にすると、最初の記録が使われます。':'Leave starting weight empty to use your first entry.','記録開始':'First entry','開始から':'since start','目標まで':'to goal','身長':'Height','低体重':'underweight','普通体重':'healthy','肥満（1度）':'overweight','肥満（2度以上）':'obese',
+  'ヘルスケアから取り込む':'Import from Apple Health','ファイルを選ぶ':'Choose file','iPhoneの「ヘルスケア」アプリ → 右上のプロフィール → 「すべてのヘルスケアデータを書き出す」で export.zip が作られます。ファイルアプリで zip をタップして展開し、中の':'In the iPhone Health app, tap your profile → “Export All Health Data” to create export.zip. Unzip it in Files and choose the','を選んでください。体重の記録だけを読み込み、同じ日時の記録は重複しません。':'inside. Only weight entries are read, and duplicates are skipped.',
+  // settings / backup / policy / plus
+  '目標達成を通知':'Notify at goal','ステージ到達を通知':'Notify at each stage','背景の波紋':'Background ripples','バックアップ':'Backup','書き出す':'Export','テキストをコピー':'Copy as text','読み込む':'Import','すべて削除':'Delete all','プライバシーと利用について':'Privacy & Terms','テキストから読み込む':'Import from text','書き出したテキストを貼り付けてください':'Paste the exported text here',
+  '記録はこの端末の中にだけ保存されます。機種変更やブラウザのデータ削除に備えて、ときどき書き出しておくと安心です。':'Records live only on this device. Export now and then so a new phone or cleared browser data does not take them with it.',
+  '通知はZENTOKIを開いている間（ホーム画面に追加したアプリを含む）に届きます。iPhoneでは「ホーム画面に追加」したアプリからのみ通知できます。':'Notifications arrive while ZENTOKI is open (including when added to your Home Screen). On iPhone, only the Home Screen version can notify you.',
+  'ZENTOKIは医療的助言を行うものではありません。持病のある方や妊娠中の方は医師に相談してください。':'ZENTOKI does not provide medical advice. If you have a medical condition or are pregnant, talk to your doctor first.',
+  '自分を整える時間を、日常に。':'Make time for yourself.','断食と瞑想を、ひとつのアプリで。':'Fasting and meditation, in one app.',
+  '静けさを、もう少し深く。':'A little deeper into the quiet.','すべてのサウンド':'All sounds','波音・森・焚き火・ドローン・バイノーラル・メロディ':'Ocean, forest, fire, drone, binaural and melody','すべての呼吸法':'All breathing patterns','ボックス、4-8 / 5-10 / 6-12 / 7-14 のリラックス呼吸':'Box breathing and the 4-8 / 5-10 / 6-12 / 7-14 relax patterns','これからの追加機能':'Everything coming next','ガイド音声、ヘルスケア同期、週の振り返り':'Guided sessions, Health sync, weekly reflections','買い切り · 追加料金なし':'one-time · nothing more to pay','購入する':'Buy','購入を復元':'Restore purchase','ライセンスキー':'Licence key','一度の購入でこの端末とブラウザで有効になります。':'One purchase unlocks this device and browser. ','特定商取引法に基づく表記':'Legal notice (Japan)','購入完了ページに表示されたキー（ZK- で始まる文字列）を入力してください。':'Enter the key shown after purchase (it starts with ZK-).','有効にする':'Activate','未購入':'Not purchased','有効':'Active','購入済み':'Purchased',
+  // note
+  'ひとこと（任意）':'A word (optional)','すっきり':'refreshed','ふつう':'okay','集中できた':'focused','眠かった':'sleepy','つらかった':'tough','今日の体調や気づき':'How you felt, anything you noticed',
+  // dynamic with placeholders
+  '%1時間':'%1h','%1分':'%1 min','%1時間%2分':'%1h %2m','%1h %2':'%1h %2','目標 %1時間':'Goal %1 hours','食事の時間 %1時間':'Eating window %1 hours','%1時間の断食を開始':'Started a %1-hour fast','%1前からの断食として開始':'Fast started %1 ago','目標を %1 時間にしました':'Goal set to %1 hours','プランを %1 に変更しますか？ 開始時刻はそのままで、目標だけ変わります。':'Switch to the %1 plan? Your start time stays; only the goal changes.','変更する':'Switch',
+  'まだ30分たっていません。記録を残さずに取り消しますか？（続ける場合はキャンセル）':'Less than 30 minutes in. Discard without saving? (Cancel to keep going)','取り消す':'Discard','取り消しました':'Discarded','目標まであと%1です。ここで終了しますか？ 記録は残ります。':'%1 to your goal. End here? It will still be saved.','終了する':'End','目標達成 · %1を記録しました':'Goal reached · %1 saved','%1の断食を記録しました。おつかれさま':'%1 fast saved. Well done',
+  '%1前から開始として記録します。':'Recorded as starting %1 ago.','今から開始します。':'Starting now.',' 目標の%1時間に達するのは %2 です。':' You will reach %1 hours at %2.','時刻を入力してください':'Enter a time','未来の時刻は指定できません':'That time is in the future','7日より前は指定できません':'Can’t go back more than 7 days',
+  '%1時間の断食を達成しました。おつかれさま。':'You completed a %1-hour fast. Well done.','%1時間の断食を達成しました':'You completed a %1-hour fast','%1時間経過':'%1 hours in','%1時間経過。%2':'%1 hours in. %2',
+  '通知が許可されていません。設定アプリで ZENTOKI の通知をオンにしてください':'Notifications are off. Enable them for ZENTOKI in Settings','この端末は通知に対応していません':'This device does not support notifications',
+  'この記録を削除しますか？':'Delete this record?','さらに表示（残り%1件）':'Show more (%1 left)','この7日間は記録がありません。焦らず、次の一回から。':'No fasts in the last 7 days. No rush. Start with the next one.','この7日間は <b>%1回</b>、平均 <b>%2</b>':'Last 7 days: <b>%1 fasts</b>, average <b>%2</b>','。前の7日より <b>%1</b>':'. <b>%1</b> vs the 7 days before',
+  '%1年%2月':'%2 %1','断食 <b>%1日</b> · 合計 <b>%2h</b> · 達成 <b>%3回</b>':'Fasted <b>%1 days</b> · total <b>%2h</b> · goal reached <b>%3</b>',' · 平均 <b>%1</b>':' · average <b>%1</b>','この月の記録はありません':'Nothing recorded this month','%1月%2日':'%2 %1','瞑想あり':'meditated','断食 ':'Fasted ','瞑想 ':'Meditated ',
+  '開始から <b>%1 kg</b>':'<b>%1 kg</b> since start','目標まで <b>%1 kg</b>':'<b>%1 kg</b> to goal','開始 %1':'Start %1','目標 %1':'Goal %1','身長 %1 cm':'Height %1 cm','すべて表示 (%1)':'Show all (%1)','読み込み中…':'Reading…','%1件を取り込みました（%2件中）':'Imported %1 of %2 entries','体重の記録が見つかりませんでした':'No weight entries found','体重を入力してください':'Enter a weight','未来の日時は指定できません':'That date is in the future','同じ記録があります':'Already logged','%1 kg を記録しました':'%1 kg logged','zipは展開してから export.xml を選んでください':'Unzip first, then choose export.xml','読み込みに失敗しました':'Could not read the file',
+  'サウンドを止めました。おやすみなさい':'Sound stopped. Good night','（Plus）':' (Plus)',
+  '今週 <b>%1回 · %2分</b> · これまで <b>%3回 · %4分</b>':'This week <b>%1 sessions · %2 min</b> · all time <b>%3 · %4 min</b>','すべての記録 (%1)':'All records (%1)','この瞑想の記録を削除しますか？':'Delete this session?','%1分の瞑想を終えました':'You meditated for %1 minutes','%1分の瞑想を記録しました':'%1 minutes saved',' · ベル%1分':' · bell every %1 min','ガイドなし · ゆっくり、吸って。吐いて。':'No guide · slowly, in and out.',
+  '読み込めませんでした。書き出したテキストか確認してください':'Could not read it. Make sure it is exported text','ZENTOKIのバックアップではないようです':'This does not look like a ZENTOKI backup','%1件の記録を読み込みました':'%1 records imported','新しい記録はありませんでした（重複は除外）':'Nothing new to import (duplicates skipped)','書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください':'Exported. If the download does not start, use “Copy as text”','コピーしました。メモなどに貼り付けて保存してください':'Copied. Paste it somewhere safe','コピーできませんでした':'Could not copy','断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。':'Delete all fasting, meditation and weight records? This cannot be undone.','削除しました':'Deleted',
+  '通知はアプリを閉じていても、目標やステージの時刻に届きます。':'Notifications arrive at goal and stage times even when the app is closed.','音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。':'Sound plays while the app is open. It stops when the screen locks or you switch apps.',
+  'キーの形式が違います':'That key format is not right','この版ではライセンスキーを使えません':'Licence keys are not available in this build','ZENTOKI Plus が有効になりました':'ZENTOKI Plus is active','このキーは無効になっています':'This key has been revoked','キーが確認できませんでした':'Could not verify the key','通信できませんでした。あとでもう一度お試しください':'No connection. Please try again later','商品を読み込めませんでした':'Could not load the product','購入を完了できませんでした':'Purchase could not be completed','購入を復元しました':'Purchase restored','復元できる購入が見つかりませんでした':'No purchase to restore','復元できませんでした':'Could not restore','準備中です':'Coming soon',
+  '明日':'Tomorrow','昨日':'Yesterday',
+};
+const T = (k, ...a) => { let t = (lang === 'en' && EN[k] !== undefined) ? EN[k] : k; for (let i = 0; i < a.length; i++) t = t.split('%' + (i + 1)).join(a[i]); if (lang === 'en') t = t.replace(/(^|[^\d.])1(<\/b>)? (fasts|sessions|days|hours|minutes|entries|records)\b/g, (m, p, b, w) => p + '1' + (b || '') + ' ' + w.slice(0, -1)); return t; };
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function applyStaticLang() {
+  if (lang !== 'en') return;
+  document.documentElement.lang = 'en'; document.title = 'ZENTOKI: Fasting & Meditation';
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: n => (n.parentNode && /^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName)) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(n => { const raw = n.nodeValue, t = raw.trim(); if (t && EN[t] !== undefined) n.nodeValue = raw.replace(t, EN[t]); });
+  document.querySelectorAll('[placeholder],[aria-label],[title]').forEach(el => ['placeholder', 'aria-label', 'title'].forEach(a => { const v = el.getAttribute(a); if (v && EN[v] !== undefined) el.setAttribute(a, EN[v]); }));
+  document.querySelectorAll('.lead, .t-tag, .t-copy, .t-start, .t-foot, .h, .label, .pw-lead').forEach(el => { el.style.letterSpacing = '.08em'; });
+}
+applyStaticLang();
 const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const H = 3600000;
 const PRESETS = [
@@ -758,10 +831,10 @@ const STAGES = [
   {h:36, t:'深いオートファジー', d:'ケトン体がさらに増加。長期断食は体調を見ながら、無理をしないでください。'},
 ];
 const DAYS = ['日','月','火','水','木','金','土'];
+const DAYS_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW = () => lang === 'en' ? ['S','M','T','W','T','F','S'] : DAYS;
 
 // ---------- state ----------
-const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
-const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 let state = load('ft.state', { preset:'16:8', customHours:16, start:null, lastEnd:null, lastEat:null });
 let history = load('ft.history', []);
 let settings = load('ft.settings', { notify:false, stageNotify:false, ripple:true });
@@ -795,10 +868,10 @@ const eatHours = () => state.preset === 'custom' ? Math.max(0, 24 - goalHours())
 // ---------- format ----------
 const pad = n => String(n).padStart(2, '0');
 const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms / H), m = Math.floor(ms % H / 60000), s = Math.floor(ms % 60000 / 1000); return `${pad(h)}:${pad(m)}:${pad(s)}`; };
-const fmtHM = ms => { const total = Math.round(Math.max(0, ms) / 60000), h = Math.floor(total / 60), m = total % 60; return h ? `${h}時間${m ? m + '分' : ''}` : `${m}分`; };
+const fmtHM = ms => { const total = Math.round(Math.max(0, ms) / 60000), h = Math.floor(total / 60), m = total % 60; if (lang === 'en') return h ? `${h}h${m ? ' ' + m + 'm' : ''}` : `${m} min`; return h ? `${h}時間${m ? m + '分' : ''}` : `${m}分`; };
 const fmtH = ms => (ms / H).toFixed(1).replace(/\.0$/, '') + 'h';
-const fmtTime = ts => { const d = new Date(ts); const today = new Date(); const tm = `${pad(d.getHours())}:${pad(d.getMinutes())}`; if (d.toDateString() === today.toDateString()) return tm; const t2 = new Date(today); t2.setDate(today.getDate() + 1); if (d.toDateString() === t2.toDateString()) return `明日 ${tm}`; const y = new Date(today); y.setDate(today.getDate() - 1); if (d.toDateString() === y.toDateString()) return `昨日 ${tm}`; return `${d.getMonth() + 1}/${d.getDate()} ${tm}`; };
-const fmtDate = ts => { const d = new Date(ts); return `${d.getMonth() + 1}/${d.getDate()} ${DAYS[d.getDay()]}`; };
+const fmtTime = ts => { const d = new Date(ts); const today = new Date(); const tm = `${pad(d.getHours())}:${pad(d.getMinutes())}`; if (d.toDateString() === today.toDateString()) return tm; const t2 = new Date(today); t2.setDate(today.getDate() + 1); if (d.toDateString() === t2.toDateString()) return `${T('明日')} ${tm}`; const y = new Date(today); y.setDate(today.getDate() - 1); if (d.toDateString() === y.toDateString()) return `${T('昨日')} ${tm}`; return lang === 'en' ? `${d.getDate()} ${MONTHS_EN[d.getMonth()]} ${tm}` : `${d.getMonth() + 1}/${d.getDate()} ${tm}`; };
+const fmtDate = ts => { const d = new Date(ts); return lang === 'en' ? `${DAYS_EN[d.getDay()]} ${d.getDate()} ${MONTHS_EN[d.getMonth()]}` : `${d.getMonth() + 1}/${d.getDate()} ${DAYS[d.getDay()]}`; };
 const toLocalInput = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
 // ---------- render ----------
@@ -808,8 +881,8 @@ function renderPresets() {
   PRESETS.forEach(p => {
     const b = document.createElement('button');
     b.className = 'preset' + (p.id === state.preset ? ' active' : '');
-    b.innerHTML = `${p.label}${p.sub ? `<small>${p.sub}</small>` : ''}`;
-    b.onclick = async () => { if (p.id === state.preset) return; if (state.start) { if (!(await ask(`プランを ${p.label} に変更しますか？ 開始時刻はそのままで、目標だけ変わります。`, '変更する'))) return; state.preset = p.id; markPassed(); persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); if (native) native.scheduleFast(); toast(`目標を ${goalHours()} 時間にしました`); return; } state.preset = p.id; persist(); renderPresets(); renderAll(); };
+    b.innerHTML = `${T(p.label)}${p.sub ? `<small>${T(p.sub)}</small>` : ''}`;
+    b.onclick = async () => { if (p.id === state.preset) return; if (state.start) { if (!(await ask(T('プランを %1 に変更しますか？ 開始時刻はそのままで、目標だけ変わります。', p.label), T('変更する')))) return; state.preset = p.id; markPassed(); persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); if (native) native.scheduleFast(); toast(T('目標を %1 時間にしました', goalHours())); return; } state.preset = p.id; persist(); renderPresets(); renderAll(); };
     box.appendChild(b);
   });
   $('#customRow').hidden = state.preset !== 'custom';
@@ -825,14 +898,14 @@ function renderStages(elapsed) {
   const cur = running ? STAGES[idx] : null;
   const next = running ? STAGES[idx + 1] : STAGES[0];
   $('#stageNow').innerHTML = cur
-    ? `<div><b>${cur.t}</b><p>${cur.d}</p></div><div class="h">${cur.h}h〜</div>`
-    : `<div><b>体の変化</b><p>断食を始めると、経過時間に応じて体の中で起きている変化の目安を表示します。</p></div>`;
+    ? `<div><b>${T(cur.t)}</b><p>${T(cur.d)}</p></div><div class="h">${cur.h}h${lang === 'en' ? '+' : '〜'}</div>`
+    : `<div><b>${T('体の変化')}</b><p>${T('断食を始めると、経過時間に応じて体の中で起きている変化の目安を表示します。')}</p></div>`;
   $('#stageNext').innerHTML = running && next
-    ? `<span>次のステージ</span><b>${next.t} · ${next.h}h</b>`
-    : running ? `<span>最終ステージです</span><b>無理をせず終了してください</b>` : '';
+    ? `<span>${T('次のステージ')}</span><b>${T(next.t)} · ${next.h}h</b>`
+    : running ? `<span>${T('最終ステージです')}</span><b>${T('無理をせず終了してください')}</b>` : '';
   $('#stages').innerHTML = STAGES.map((s, i) => {
     const cls = idx < 0 ? '' : i < idx ? 'past' : i === idx ? 'now' : '';
-    return `<div class="stage ${cls}"><div class="h">${s.h}h</div><div><b>${s.t}</b><p>${s.d}</p></div></div>`;
+    return `<div class="stage ${cls}"><div class="h">${s.h}h</div><div><b>${T(s.t)}</b><p>${T(s.d)}</p></div></div>`;
   }).join('');
 }
 
@@ -843,12 +916,12 @@ function renderTimer() {
   bar.style.strokeDasharray = circ;
   if (!state.start) {
     bar.style.strokeDashoffset = circ; tip.hidden = true;
-    $('#ringLabel').textContent = '目標';
+    $('#ringLabel').textContent = T('目標');
     $('#ringTime').textContent = `${goalHours()}h`;
-    $('#ringSub').textContent = `食事の時間 ${eatHours()}時間`;
+    $('#ringSub').textContent = T('食事の時間 %1時間', eatHours());
     $('#remainBig').innerHTML = '';
     $('#timesBox').hidden = true;
-    $('#mainBtn').textContent = '断食をはじめる';
+    $('#mainBtn').textContent = T('断食をはじめる');
     if (renderTimer.lastIdx !== -1) { renderTimer.lastIdx = -1; renderStages(0); }
     return;
   }
@@ -858,14 +931,14 @@ function renderTimer() {
   bar.style.strokeDashoffset = circ * (1 - ratio);
   // the svg is rotated -90deg by CSS, so place the tip a quarter turn ahead in un-rotated coordinates
   tip.hidden = false; const tp2 = tipAt(ratio + 0.25); tip.setAttribute('cx', tp2.x.toFixed(2)); tip.setAttribute('cy', tp2.y.toFixed(2));
-  $('#ringLabel').textContent = elapsed >= goal ? '目標達成' : '経過時間';
+  $('#ringLabel').textContent = elapsed >= goal ? T('目標達成') : T('経過時間');
   $('#ringTime').textContent = fmtDur(elapsed);
-  $('#ringSub').textContent = `目標 ${goalHours()}時間`;
-  $('#remainBig').innerHTML = elapsed >= goal ? `<small>目標を超えて</small>${fmtHM(elapsed - goal)}` : `<small>あと</small>${fmtHM(goal - elapsed)}`;
+  $('#ringSub').textContent = T('目標 %1時間', goalHours());
+  $('#remainBig').innerHTML = elapsed >= goal ? `<small>${T('目標を超えて')}</small>${fmtHM(elapsed - goal)}` : (lang === 'en' ? `${fmtHM(goal - elapsed)}<small style="margin-left:10px;margin-right:0">${T('あと')}</small>` : `<small>${T('あと')}</small>${fmtHM(goal - elapsed)}`);
   $('#timesBox').hidden = false;
   $('#startedAt').textContent = fmtTime(state.start);
   $('#goalAt').textContent = fmtTime(state.start + goal);
-  $('#mainBtn').textContent = '断食を終了';
+  $('#mainBtn').textContent = T('断食を終了');
   const idx = stageIndex(elapsed);
   if (renderTimer.lastIdx !== idx) { renderTimer.lastIdx = idx; renderStages(elapsed); }
   checkNotifications(elapsed, goal);
@@ -889,11 +962,11 @@ function renderHistory() {
   list.innerHTML = sorted.slice(0, histShown).map(r => {
     const dur = r.end - r.start;
     const ok = dur >= r.goal * H;
-    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · 早めに終了'}${r.mood ? ' · ' + esc(r.mood) : ''}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h${r.note ? `<br><span style="color:var(--ink2)">${esc(r.note)}</span>` : ''}</div><button class="del" data-id="${esc(r.id)}" aria-label="削除">×</button></li>`;
+    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · ' + T('早めに終了')}${r.mood ? ' · ' + esc(T(r.mood)) : ''}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · ${T('目標')} ${esc(r.goal)}h${r.note ? `<br><span style="color:var(--ink2)">${esc(r.note)}</span>` : ''}</div><button class="del" data-id="${esc(r.id)}" aria-label="削除">×</button></li>`;
   }).join('');
   $('#historyEmpty').hidden = list.hidden || history.length > 0;
-  $('#histMore').hidden = list.hidden || history.length <= histShown; $('#histMore').textContent = `さらに表示（残り${Math.max(0, history.length - histShown)}件）`;
-  list.querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この記録を削除しますか？', '削除')) { history = history.filter(r => r.id !== b.dataset.id); persist(); renderHistory(); } });
+  $('#histMore').hidden = list.hidden || history.length <= histShown; $('#histMore').textContent = T('さらに表示（残り%1件）', Math.max(0, history.length - histShown));
+  list.querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask(T('この記録を削除しますか？'), T('削除'))) { history = history.filter(r => r.id !== b.dataset.id); persist(); renderHistory(); } });
 
   $('#stTotal').textContent = history.length;
   const durs = history.map(r => r.end - r.start);
@@ -903,8 +976,8 @@ function renderHistory() {
   { const now = Date.now(), w1 = history.filter(r => r.end >= now - 7 * 86400000), w0 = history.filter(r => r.end >= now - 14 * 86400000 && r.end < now - 7 * 86400000);
     const avg = a => a.length ? a.reduce((x, r) => x + (r.end - r.start), 0) / a.length : 0;
     const el = $('#weekSum');
-    if (!w1.length) el.innerHTML = history.length ? 'この7日間は記録がありません。焦らず、次の一回から。' : '';
-    else { const d = w0.length ? (avg(w1) - avg(w0)) / H : null; el.innerHTML = `この7日間は <b>${w1.length}回</b>、平均 <b>${fmtH(avg(w1))}</b>${d !== null ? `。前の7日より <b>${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}h</b>` : ''}。`; }
+    if (!w1.length) el.innerHTML = history.length ? T('この7日間は記録がありません。焦らず、次の一回から。') : '';
+    else { const d = w0.length ? (avg(w1) - avg(w0)) / H : null; el.innerHTML = T('この7日間は <b>%1回</b>、平均 <b>%2</b>', w1.length, fmtH(avg(w1))) + (d !== null ? T('。前の7日より <b>%1</b>', (d >= 0 ? '+' : '−') + Math.abs(d).toFixed(1) + 'h') : '') + (lang === 'en' ? '.' : '。'); }
   }
 
   const totalMs = durs.reduce((a, b) => a + b, 0);
@@ -950,12 +1023,12 @@ const native = (() => {
     if (!settings.notify && !settings.stageNotify) return;
     if (!(await perm())) return;
     const now = Date.now(); const list = [];
-    if (settings.notify) { const at = state.start + goalMs(); if (at > now + 5000) list.push({ id: ids.goal, title: '目標達成', body: `${goalHours()}時間の断食を達成しました。おつかれさま。`, schedule: { at: new Date(at) }, sound: 'default' }); }
-    if (settings.stageNotify) STAGES.forEach((st, i) => { if (st.h <= 0) return; const at = state.start + st.h * H; if (at > now + 5000 && at < state.start + goalMs()) list.push({ id: ids.stage + i, title: st.t, body: `${st.h}時間経過。${st.d}`, schedule: { at: new Date(at) }, sound: 'default' }); });
+    if (settings.notify) { const at = state.start + goalMs(); if (at > now + 5000) list.push({ id: ids.goal, title: T('目標達成'), body: T('%1時間の断食を達成しました。おつかれさま。', goalHours()), schedule: { at: new Date(at) }, sound: 'default' }); }
+    if (settings.stageNotify) STAGES.forEach((st, i) => { if (st.h <= 0) return; const at = state.start + st.h * H; if (at > now + 5000 && at < state.start + goalMs()) list.push({ id: ids.stage + i, title: T(st.t), body: T('%1時間経過。%2', st.h, T(st.d)), schedule: { at: new Date(at) }, sound: 'default' }); });
     if (list.length) { try { await LN.schedule({ notifications: list }); } catch {} }
   }
   async function cancelMed() { if (!LN) return; try { await LN.cancel({ notifications: [{ id: 1300 }] }); } catch {} }
-  async function scheduleMed(at) { if (!LN) return; await cancelMed(); if (!(await perm())) return; try { await LN.schedule({ notifications: [{ id: 1300, title: '瞑想を終えました', body: 'おつかれさま。ゆっくり戻ってきてください。', schedule: { at: new Date(at) }, sound: 'default' }] }); } catch {} }
+  async function scheduleMed(at) { if (!LN) return; await cancelMed(); if (!(await perm())) return; try { await LN.schedule({ notifications: [{ id: 1300, title: T('瞑想を終えました'), body: T('おつかれさま。ゆっくり戻ってきてください。'), schedule: { at: new Date(at) }, sound: 'default' }] }); } catch {} }
   return {
     scheduleFast, cancelFast, perm, scheduleMed, cancelMed,
     keepAwake(on) { try { if (!KA) return; on ? KA.keepAwake() : KA.allowSleep(); } catch {} },
@@ -964,9 +1037,9 @@ const native = (() => {
 })();
 
 // in-app confirm (native confirm() is blocked inside sandboxed viewers such as claude.ai)
-function ask(msg, okLabel = 'OK', title = '確認') {
+function ask(msg, okLabel = 'OK', title = T('確認')) {
   return new Promise(res => {
-    const d = $('#askDialog'); $('#askTitle').textContent = title; $('#askMsg').textContent = msg; $('#askYes').textContent = okLabel;
+    const d = $('#askDialog'); $('#askTitle').textContent = title; $('#askMsg').textContent = msg; $('#askYes').textContent = okLabel; $('#askNo').textContent = T('キャンセル');
     const done = v => { d.close(); $('#askYes').onclick = $('#askNo').onclick = null; d.oncancel = null; res(v); };
     $('#askYes').onclick = () => done(true); $('#askNo').onclick = () => done(false); d.oncancel = e => { e.preventDefault(); done(false); };
     d.showModal();
@@ -982,25 +1055,25 @@ function startFast(ts = Date.now()) {
   markPassed();
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); startTick();
   if (native) native.scheduleFast();
-  toast(Date.now() - state.start > 60000 ? `${fmtHM(Date.now() - state.start)}前からの断食として開始` : `${goalHours()}時間の断食を開始`); ripple.burst(3); audio.chime('start');
+  toast(Date.now() - state.start > 60000 ? T('%1前からの断食として開始', fmtHM(Date.now() - state.start)) : T('%1時間の断食を開始', goalHours())); ripple.burst(3); audio.chime('start');
 }
 
 async function endFast() {
   const dur = Date.now() - state.start;
   const ok = dur >= goalMs();
   if (dur < 30 * 60000) {
-    if (!(await ask('まだ30分たっていません。記録を残さずに取り消しますか？（続ける場合はキャンセル）', '取り消す'))) return;
+    if (!(await ask(T('まだ30分たっていません。記録を残さずに取り消しますか？（続ける場合はキャンセル）'), T('取り消す')))) return;
     if (!state.start) return;
-    state.start = null; notified = { goal:false, stages:[] }; persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); toast('取り消しました'); if (native) native.cancelFast(); return;
+    state.start = null; notified = { goal:false, stages:[] }; persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); toast(T('取り消しました')); if (native) native.cancelFast(); return;
   }
-  if (!ok && !(await ask(`目標まであと${fmtHM(goalMs() - dur)}です。ここで終了しますか？ 記録は残ります。`, '終了する'))) return;
+  if (!ok && !(await ask(T('目標まであと%1です。ここで終了しますか？ 記録は残ります。', fmtHM(goalMs() - dur)), T('終了する')))) return;
   if (!state.start) return;
   const recId = String(Date.now());
   history.push({ id: recId, start: state.start, end: Date.now(), goal: goalHours(), preset: state.preset });
   state.lastEnd = Date.now(); state.lastEat = eatHours(); state.start = null; notified = { goal:false, stages:[] };
   if (native) native.cancelFast();
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll();
-  toast(ok ? `目標達成 · ${fmtHM(dur)}を記録しました` : `${fmtHM(dur)}の断食を記録しました。おつかれさま`); ripple.burst(ok ? 4 : 2); audio.chime(ok ? 'goal' : 'end');
+  toast(ok ? T('目標達成 · %1を記録しました', fmtHM(dur)) : T('%1の断食を記録しました。おつかれさま', fmtHM(dur))); ripple.burst(ok ? 4 : 2); audio.chime(ok ? 'goal' : 'end');
   setTimeout(() => openNote(recId), 900);
 }
 let noteFor = null, noteMood = '';
@@ -1015,8 +1088,8 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 
 // ---------- notifications ----------
 async function ensurePermission() {
-  if (native) { const ok = await native.perm(); if (!ok) toast('通知が許可されていません。設定アプリで ZENTOKI の通知をオンにしてください'); return ok; }
-  if (!('Notification' in window)) { toast('この端末は通知に対応していません'); return false; }
+  if (native) { const ok = await native.perm(); if (!ok) toast(T('通知が許可されていません。設定アプリで ZENTOKI の通知をオンにしてください')); return ok; }
+  if (!('Notification' in window)) { toast(T('この端末は通知に対応していません')); return false; }
   if (Notification.permission === 'granted') return true;
   return (await Notification.requestPermission()) === 'granted';
 }
@@ -1030,8 +1103,8 @@ function notify(title, body) {
 }
 function checkNotifications(elapsed, goal) {
   let changed = false;
-  if (!notified.goal && elapsed >= goal) { if (settings.notify) notify('目標達成', `${goalHours()}時間の断食を達成しました`); notified.goal = true; changed = true; ripple.burst(4); audio.chime('goal'); }
-  STAGES.forEach(s => { if (s.h > 0 && elapsed >= s.h * H && !notified.stages.includes(s.h)) { if (settings.stageNotify) notify(s.t, `${s.h}時間経過`); notified.stages.push(s.h); changed = true; if (elapsed < goal) audio.chime('stage'); } });
+  if (!notified.goal && elapsed >= goal) { if (settings.notify) notify(T('目標達成'), T('%1時間の断食を達成しました', goalHours())); notified.goal = true; changed = true; ripple.burst(4); audio.chime('goal'); }
+  STAGES.forEach(s => { if (s.h > 0 && elapsed >= s.h * H && !notified.stages.includes(s.h)) { if (settings.stageNotify) notify(T(s.t), T('%1時間経過', s.h)); notified.stages.push(s.h); changed = true; if (elapsed < goal) audio.chime('stage'); } });
   if (changed) save('ft.notified', notified);
 }
 
@@ -1359,16 +1432,16 @@ function openBegin() {
 function updateBeginHint() {
   const ts = new Date($('#beginInput').value).getTime(); if (!isFinite(ts)) { $('#beginHint').textContent = ''; return; }
   const ago = Date.now() - ts; const end = ts + goalMs();
-  $('#beginHint').textContent = (ago > 60000 ? `${fmtHM(ago)}前から開始として記録します。` : '今から開始します。') + ` 目標の${goalHours()}時間に達するのは ${fmtTime(end)} です。`;
+  $('#beginHint').textContent = (ago > 60000 ? T('%1前から開始として記録します。', fmtHM(ago)) : T('今から開始します。')) + T(' 目標の%1時間に達するのは %2 です。', goalHours(), fmtTime(end));
 }
 $('#beginSeg').querySelectorAll('button').forEach(b => b.onclick = () => { $('#beginInput').value = toLocalInput(Date.now() - Number(b.dataset.ago) * 60000); $('#beginSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b)); updateBeginHint(); });
 $('#beginInput').oninput = () => { $('#beginSeg').querySelectorAll('button').forEach(x => x.classList.remove('active')); updateBeginHint(); };
 $('#beginCancel').onclick = () => $('#beginDialog').close();
 $('#beginOk').onclick = () => {
   const ts = new Date($('#beginInput').value).getTime();
-  if (!isFinite(ts)) { toast('時刻を入力してください'); return; }
-  if (ts > Date.now() + 60000) { toast('未来の時刻は指定できません'); return; }
-  if (Date.now() - ts > 7 * 86400000) { toast('7日より前は指定できません'); return; }
+  if (!isFinite(ts)) { toast(T('時刻を入力してください')); return; }
+  if (ts > Date.now() + 60000) { toast(T('未来の時刻は指定できません')); return; }
+  if (Date.now() - ts > 7 * 86400000) { toast(T('7日より前は指定できません')); return; }
   $('#beginDialog').close(); startFast(ts);
 };
 $('#customHours').oninput = e => { state.customHours = Math.max(1, Math.min(120, Number(e.target.value) || 16)); if (state.start) markPassed(); persist(); renderTimer.lastIdx = -2; renderTimer(); if (state.start && native) native.scheduleFast(); };
@@ -1376,11 +1449,12 @@ $('#editStart').onclick = () => { $('#startInput').value = toLocalInput(state.st
 $('#startCancel').onclick = () => $('#startDialog').close();
 $('#startOk').onclick = () => {
   const v = new Date($('#startInput').value).getTime();
-  if (!v || v > Date.now()) { toast('未来の時刻は指定できません'); return; }
+  if (!v || v > Date.now()) { toast(T('未来の時刻は指定できません')); return; }
   state.start = v; markPassed(); persist(); renderTimer.lastIdx = -2; renderAll(); $('#startDialog').close(); if (native) native.scheduleFast();
 };
 $('#settingsBtn').onclick = () => { $('#notifyToggle').checked = settings.notify; $('#stageNotifyToggle').checked = settings.stageNotify; $('#rippleToggle').checked = settings.ripple; $('#settingsDialog').showModal(); };
 $('#settingsClose').onclick = () => $('#settingsDialog').close();
+$('#langSeg').querySelectorAll('button').forEach(b => { b.classList.toggle('active', b.dataset.l === lang); b.onclick = () => { if (b.dataset.l === lang) return; save('ft.lang', b.dataset.l); location.reload(); }; });
 $('#notifyToggle').onchange = async e => { settings.notify = e.target.checked && await ensurePermission(); e.target.checked = settings.notify; persist(); if (native) native.scheduleFast(); };
 $('#stageNotifyToggle').onchange = async e => { settings.stageNotify = e.target.checked && await ensurePermission(); e.target.checked = settings.stageNotify; persist(); if (native) native.scheduleFast(); };
 $('#rippleToggle').onchange = e => { settings.ripple = e.target.checked; persist(); ripple.set(settings.ripple); };
@@ -1401,7 +1475,7 @@ function dayMeds(day) { const s0 = day.getTime(), e0 = s0 + 86400000; return (ty
 function dayRecords(day) { const s0 = day.getTime(), e0 = s0 + 86400000; return history.filter(r => r.end >= s0 && r.end < e0).sort((a, b) => a.end - b.end); }
 function renderCalendar() {
   const y = calMonth.getFullYear(), m = calMonth.getMonth();
-  $('#calTitle').textContent = `${y}年${m + 1}月`;
+  $('#calTitle').textContent = lang === 'en' ? `${['January','February','March','April','May','June','July','August','September','October','November','December'][m]} ${y}` : `${y}年${m + 1}月`;
   const today = new Date(); today.setHours(0,0,0,0);
   $('#calNext').disabled = calMonth >= new Date(today.getFullYear(), today.getMonth(), 1);
   $('#calNext').style.visibility = $('#calNext').disabled ? 'hidden' : '';
@@ -1417,27 +1491,27 @@ function renderCalendar() {
     if (inMonth && !future) { if (ms > 0) { mDays++; mHours += ms; } mCount += recs.length; if (goal) mGoal++; }
     const md = dayMeds(d);
     const cls = ['d', inMonth ? '' : 'out', future ? 'future' : '', d.getTime() === today.getTime() ? 'today' : '', ms > 0 ? 'has' : '', goal ? 'goal' : '', md.length ? 'med' : '', calSel && dayKey(d) === dayKey(calSel) ? 'sel' : ''].filter(Boolean).join(' ');
-    cells.push(`<button class="${cls}" data-t="${d.getTime()}" ${future ? 'disabled' : ''} aria-label="${d.getMonth() + 1}月${d.getDate()}日 ${ms ? fmtHM(ms) : '記録なし'}${md.length ? ' 瞑想あり' : ''}"><span>${d.getDate()}</span><i class="dot"></i><i class="dot2"></i></button>`);
+    cells.push(`<button class="${cls}" data-t="${d.getTime()}" ${future ? 'disabled' : ''} aria-label="${lang === 'en' ? d.getDate() + ' ' + MONTHS_EN[d.getMonth()] : (d.getMonth() + 1) + '月' + d.getDate() + '日'} ${ms ? fmtHM(ms) : T('記録なし')}${md.length ? ' ' + T('瞑想あり') : ''}"><span>${d.getDate()}</span><i class="dot"></i><i class="dot2"></i></button>`);
   }
-  $('#cal').innerHTML = DAYS.map(d => `<div class="dow">${d}</div>`).join('') + cells.join('');
-  $('#calSum').innerHTML = mDays ? `断食 <b>${mDays}日</b> · 合計 <b>${Math.round(mHours / H)}h</b> · 達成 <b>${mGoal}回</b>${mCount ? ` · 平均 <b>${fmtH(mHours / Math.max(1, mDays))}</b>` : ''}` : 'この月の記録はありません';
+  $('#cal').innerHTML = DOW().map(d => `<div class="dow">${d}</div>`).join('') + cells.join('');
+  $('#calSum').innerHTML = mDays ? T('断食 <b>%1日</b> · 合計 <b>%2h</b> · 達成 <b>%3回</b>', mDays, Math.round(mHours / H), mGoal) + (mCount ? T(' · 平均 <b>%1</b>', fmtH(mHours / Math.max(1, mDays))) : '') : T('この月の記録はありません');
   $('#cal').querySelectorAll('.d').forEach(b => b.onclick = () => { const d = new Date(Number(b.dataset.t)); calSel = calSel && dayKey(calSel) === dayKey(d) ? null : d; renderCalendar(); });
   renderCalDay();
 }
 function renderCalDay() {
   const box = $('#calDay');
-  if (!calSel) { box.innerHTML = '<div class="t"><span>日付をタップすると、その日の記録が見られます</span></div>'; return; }
+  if (!calSel) { box.innerHTML = `<div class="t"><span>${T('日付をタップすると、その日の記録が見られます')}</span></div>`; return; }
   const recs = dayRecords(calSel); const ms = hoursOn(calSel); const md = dayMeds(calSel);
-  let html = `<div class="t"><span>${calSel.getMonth() + 1}月${calSel.getDate()}日 ${DAYS[calSel.getDay()]}</span><span>${ms ? '断食 ' + fmtHM(ms) : ''}${md.length ? (ms ? ' · ' : '') + '瞑想 ' + md.reduce((a, m) => a + m.min, 0) + '分' : ''}</span></div>`;
-  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>断食 ${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h${ok ? '' : ' · 早めに終了'}${r.mood ? ' · ' + esc(r.mood) : ''}${r.note ? '<br>' + esc(r.note) : ''}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
-  else if (ms) html += `<div>別の日に終了した断食の時間です</div>`;
-  if (md.length) html += `<ul>${md.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>瞑想 ${fmtTime(m.ts)}${br ? ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span><b>${esc(m.min)}分</b></li>`; }).join('')}</ul>`;
-  if (!recs.length && !ms && !md.length) html += `<div>この日は記録がありません</div>`;
+  let html = `<div class="t"><span>${fmtDate(calSel.getTime())}</span><span>${ms ? T('断食 ') + fmtHM(ms) : ''}${md.length ? (ms ? ' · ' : '') + T('瞑想 ') + T('%1分', md.reduce((a, m) => a + m.min, 0)) : ''}</span></div>`;
+  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>${T('断食 ')}${fmtTime(r.start)} – ${fmtTime(r.end)} · ${T('目標')} ${esc(r.goal)}h${ok ? '' : ' · ' + T('早めに終了')}${r.mood ? ' · ' + esc(T(r.mood)) : ''}${r.note ? '<br>' + esc(r.note) : ''}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
+  else if (ms) html += `<div>${T('別の日に終了した断食の時間です')}</div>`;
+  if (md.length) html += `<ul>${md.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>${T('瞑想 ')}${fmtTime(m.ts)}${br ? ' · ' + T(br.label) : ''}${m.completed === false ? ' · ' + T('早めに終了') : ''}</span><b>${T('%1分', esc(m.min))}</b></li>`; }).join('')}</ul>`;
+  if (!recs.length && !ms && !md.length) html += `<div>${T('この日は記録がありません')}</div>`;
   box.innerHTML = html;
 }
 $('#calPrev').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCalendar(); };
 $('#calNext').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCalendar(); };
-$('#histToggle').onclick = () => { const h = $('#history'); const open = h.hidden; h.hidden = !open; histShown = 30; renderHistory(); $('#histToggle').textContent = open ? '閉じる' : 'すべての断食の記録'; };
+$('#histToggle').onclick = () => { const h = $('#history'); const open = h.hidden; h.hidden = !open; histShown = 30; renderHistory(); $('#histToggle').textContent = open ? T('閉じる') : T('すべての断食の記録'); };
 $('#histMore').onclick = () => { histShown += 30; renderHistory(); };
 
 // ---------- weight ----------
@@ -1459,12 +1533,12 @@ function renderWeight() {
     const start = wStartKg();
     const d = cur.kg - start;
     const parts = [];
-    if (Math.abs(d) >= 0.05) parts.push(`開始から <b>${d > 0 ? '+' : '−'}${fmtKg(Math.abs(d))} kg</b>`);
-    if (wgoal.goal) { const r = cur.kg - wgoal.goal; parts.push(r > 0.05 ? `目標まで <b>${fmtKg(r)} kg</b>` : '<b>目標達成</b>'); }
-    $('#wDelta').innerHTML = parts.join('<br>') || '<b>記録開始</b>';
-    const meta = [`開始 ${fmtKg(start)}`]; if (wgoal.goal) meta.push(`目標 ${fmtKg(wgoal.goal)}`);
+    if (Math.abs(d) >= 0.05) parts.push(T('開始から <b>%1 kg</b>', (d > 0 ? '+' : '−') + fmtKg(Math.abs(d))));
+    if (wgoal.goal) { const r = cur.kg - wgoal.goal; parts.push(r > 0.05 ? T('目標まで <b>%1 kg</b>', fmtKg(r)) : `<b>${T('目標達成')}</b>`); }
+    $('#wDelta').innerHTML = parts.join('<br>') || `<b>${T('記録開始')}</b>`;
+    const meta = [T('開始 %1', fmtKg(start))]; if (wgoal.goal) meta.push(T('目標 %1', fmtKg(wgoal.goal)));
     $('#wStart').textContent = meta.join(' · ');
-    $('#wGoalBtn').textContent = wgoal.goal ? '変更' : '目標を設定';
+    $('#wGoalBtn').textContent = wgoal.goal ? T('変更') : T('目標を設定');
     const bar = $('#wBar');
     if (wgoal.goal && Math.abs(start - wgoal.goal) > 0.05) {
       bar.hidden = false;
@@ -1475,15 +1549,15 @@ function renderWeight() {
     const bmiEl = $('#bmi');
     if (wgoal.height) {
       const h = wgoal.height / 100; const bmi = cur.kg / (h * h);
-      const cls = bmi < 18.5 ? '低体重' : bmi < 25 ? '普通体重' : bmi < 30 ? '肥満（1度）' : '肥満（2度以上）';
-      bmiEl.hidden = false; bmiEl.innerHTML = `<span><b>${bmi.toFixed(1)}</b>BMI · ${cls}</span><span>身長 ${wgoal.height} cm</span>`;
+      const cls = T(bmi < 18.5 ? '低体重' : bmi < 25 ? '普通体重' : bmi < 30 ? '肥満（1度）' : '肥満（2度以上）');
+      bmiEl.hidden = false; bmiEl.innerHTML = `<span><b>${bmi.toFixed(1)}</b>BMI · ${cls}</span><span>${T('身長 %1 cm', wgoal.height)}</span>`;
     } else bmiEl.hidden = true;
   } else { $('#bmi').hidden = true; }
   const desc = [...list].reverse();
   const shown = wShowAll ? desc : desc.slice(0, 5);
   $('#wList').innerHTML = shown.map(w => `<li><span>${fmtDate(w.ts)} ${pad(new Date(w.ts).getHours())}:${pad(new Date(w.ts).getMinutes())}${w.src === 'health' ? '<span class="src">HEALTH</span>' : ''}</span><b>${fmtKg(w.kg)}</b><button class="del" data-id="${esc(w.id)}" aria-label="削除">×</button></li>`).join('');
-  $('#wList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この記録を削除しますか？', '削除')) { weights = weights.filter(w => w.id !== b.dataset.id); save('ft.weights', weights); renderWeight(); } });
-  const more = $('#wMore'); more.hidden = desc.length <= 5; more.textContent = wShowAll ? '閉じる' : `すべて表示 (${desc.length})`;
+  $('#wList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask(T('この記録を削除しますか？'), T('削除'))) { weights = weights.filter(w => w.id !== b.dataset.id); save('ft.weights', weights); renderWeight(); } });
+  const more = $('#wMore'); more.hidden = desc.length <= 5; more.textContent = wShowAll ? T('閉じる') : T('すべて表示 (%1)', desc.length);
 }
 
 function renderWeightChart(list) {
@@ -1502,7 +1576,7 @@ function renderWeightChart(list) {
   const months = []; { const d = new Date(from); d.setDate(1); d.setHours(0,0,0,0); d.setMonth(d.getMonth() + 1); while (d.getTime() < now) { months.push(new Date(d)); d.setMonth(d.getMonth() + 1); } }
   const xl = span <= 45 * 86400000
     ? [0, .5, 1].map(f => { const t = from + f * (now - from); return { x: X(t), t: `${new Date(t).getMonth() + 1}/${new Date(t).getDate()}` }; })
-    : months.map(d => ({ x: X(d.getTime()), t: `${d.getMonth() + 1}月` }));
+    : months.map(d => ({ x: X(d.getTime()), t: lang === 'en' ? MONTHS_EN[d.getMonth()] : `${d.getMonth() + 1}月` }));
   box.innerHTML = `<div class="tip" id="wTip"></div><svg viewBox="0 0 ${W} ${Hc}" preserveAspectRatio="none">
     <defs><linearGradient id="wfade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
     ${ticks.map(v => `<line class="grid" x1="${padL}" x2="${W - padR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text x="${W - padR + 8}" y="${(Y(v) + 3).toFixed(1)}">${fmtKg(v)}</text>`).join('')}
@@ -1534,7 +1608,7 @@ async function importHealthXml(file) {
   const dec = new TextDecoder();
   const re = /<Record[^>]*type="HKQuantityTypeIdentifierBodyMass"[^>]*\/?>/g;
   const attr = (tag, n) => { const m = tag.match(new RegExp(`\\s${n}="([^"]*)"`)); return m ? m[1] : null; };
-  toast('読み込み中…');
+  toast(T('読み込み中…'));
   while (off < file.size) {
     const buf = await file.slice(off, off + CH).arrayBuffer(); off += CH;
     let text = rest + dec.decode(buf, { stream: off < file.size });
@@ -1551,7 +1625,7 @@ async function importHealthXml(file) {
     }
   }
   save('ft.weights', weights); renderWeight();
-  toast(seen ? `${added}件を取り込みました（${seen}件中）` : '体重の記録が見つかりませんでした');
+  toast(seen ? T('%1件を取り込みました（%2件中）', added, seen) : T('体重の記録が見つかりませんでした'));
 }
 
 $('#wAddBtn').onclick = () => {
@@ -1562,10 +1636,10 @@ $('#wAddBtn').onclick = () => {
 $('#wCancel').onclick = () => $('#weightDialog').close();
 $('#wOk').onclick = () => {
   const kg = parseFloat($('#wInput').value); const ts = new Date(`${$('#wDate').value}T${$('#wTime').value || '00:00'}`).getTime();
-  if (!(kg > 20 && kg < 300)) { toast('体重を入力してください'); return; }
-  if (!isFinite(ts) || ts > Date.now() + 60000) { toast('未来の日時は指定できません'); return; }
-  if (!addWeight(kg, ts)) { toast('同じ記録があります'); return; }
-  save('ft.weights', weights); renderWeight(); $('#weightDialog').close(); toast(`${fmtKg(kg)} kg を記録しました`);
+  if (!(kg > 20 && kg < 300)) { toast(T('体重を入力してください')); return; }
+  if (!isFinite(ts) || ts > Date.now() + 60000) { toast(T('未来の日時は指定できません')); return; }
+  if (!addWeight(kg, ts)) { toast(T('同じ記録があります')); return; }
+  save('ft.weights', weights); renderWeight(); $('#weightDialog').close(); toast(T('%1 kg を記録しました', fmtKg(kg)));
 };
 $('#wGoalBtn').onclick = () => { $('#gStart').value = wgoal.start ?? ''; $('#gGoal').value = wgoal.goal ?? ''; $('#gHeight').value = wgoal.height ?? ''; $('#goalDialog').showModal(); };
 $('#gCancel').onclick = () => $('#goalDialog').close();
@@ -1580,8 +1654,8 @@ $('#iCancel').onclick = () => $('#importDialog').close();
 $('#iPick').onclick = () => { $('#importDialog').close(); $('#wFile').click(); };
 $('#wFile').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  if (/\.zip$/i.test(f.name)) { toast('zipは展開してから export.xml を選んでください'); return; }
-  try { await importHealthXml(f); } catch (err) { console.error(err); toast('読み込みに失敗しました'); }
+  if (/\.zip$/i.test(f.name)) { toast(T('zipは展開してから export.xml を選んでください')); return; }
+  try { await importHealthXml(f); } catch (err) { console.error(err); toast(T('読み込みに失敗しました')); }
 };
 addEventListener('resize', () => { if (weights.length) renderWeightChart(wSorted()); });
 
@@ -1597,14 +1671,16 @@ const SOUNDS = [
   { id:'binaural', ja:'バイノーラル', en:'BINAURAL', icon:'<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="7" rx="1.5"/><rect x="17" y="13" width="4" height="7" rx="1.5"/>' },
   { id:'melody',   ja:'メロディ', en:'MELODY',   icon:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>' },
 ];
+const sName = x => lang === 'en' ? x.en.charAt(0) + x.en.slice(1).toLowerCase() : x.ja;
+const sSub = x => lang === 'en' ? x.ja : x.en;
 let sleepTimer = null;
-function armSleep() { clearTimeout(sleepTimer); if (settings.sound.on && settings.sound.sleep > 0) sleepTimer = setTimeout(() => { settings.sound.on = false; persist(); audio.apply(); renderSound(); toast('サウンドを止めました。おやすみなさい'); }, settings.sound.sleep * 60000); }
+function armSleep() { clearTimeout(sleepTimer); if (settings.sound.on && settings.sound.sleep > 0) sleepTimer = setTimeout(() => { settings.sound.on = false; persist(); audio.apply(); renderSound(); toast(T('サウンドを止めました。おやすみなさい')); }, settings.sound.sleep * 60000); }
 function renderSound() {
   if (lockedSound(settings.sound.mode)) { settings.sound.mode = 'rain'; settings.sound.on = false; save('ft.settings', settings); if (typeof audio !== 'undefined') audio.apply(); }
   const cur = SOUNDS.find(x => x.id === settings.sound.mode) || SOUNDS[0];
-  $('#sGrid').innerHTML = SOUNDS.map(x => `<button class="s-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" aria-label="${x.ja}${lockedSound(x.id) ? '（Plus）' : ''}">${lockedSound(x.id) ? '<span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>' : ''}<svg viewBox="0 0 24 24">${x.icon}</svg><b>${x.ja}</b><small>${x.en}</small></button>`).join('');
+  $('#sGrid').innerHTML = SOUNDS.map(x => `<button class="s-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" aria-label="${sName(x)}${lockedSound(x.id) ? T('（Plus）') : ''}">${lockedSound(x.id) ? '<span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>' : ''}<svg viewBox="0 0 24 24">${x.icon}</svg><b>${sName(x)}</b><small>${sSub(x)}</small></button>`).join('');
   $('#sGrid').querySelectorAll('.s-card').forEach(b => b.onclick = () => { if (lockedSound(b.dataset.id)) { openPaywall('sound'); return; } const same = settings.sound.mode === b.dataset.id; settings.sound.mode = b.dataset.id; if (!same || !settings.sound.on) settings.sound.on = true; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); ripple.burst(2); });
-  $('#sNowJa').textContent = cur.ja; $('#sNowEn').textContent = cur.en;
+  $('#sNowJa').textContent = sName(cur); $('#sNowEn').textContent = sSub(cur);
   $('#sHero').classList.toggle('on', settings.sound.on);
   $('#sPlayIcon').innerHTML = settings.sound.on ? '<rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/>' : '<path d="M8 5v14l11-7z"/>';
   $('#beatBox').hidden = settings.sound.mode !== 'binaural';
@@ -1612,7 +1688,7 @@ function renderSound() {
   $('#layerToggle').checked = !!settings.sound.layerWater;
   $('#volInput').value = settings.sound.volume; $('#volPct').textContent = settings.sound.volume + '%';
   $('#chimeToggle').checked = settings.sound.chime;
-  $('#sleepVal').textContent = settings.sound.sleep ? `${settings.sound.sleep}分` : 'オフ';
+  $('#sleepVal').textContent = settings.sound.sleep ? T('%1分', settings.sound.sleep) : T('オフ');
 }
 $('#sPlay').onclick = () => { settings.sound.on = !settings.sound.on; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); if (settings.sound.on) ripple.burst(2); };
 $('#beatSeg').querySelectorAll('button').forEach(b => b.onclick = () => { settings.sound.beat = Number(b.dataset.beat); persist(); audio.apply(); renderSound(); });
@@ -1653,26 +1729,26 @@ let medShowAll = false;
 let med = null; // { t0, paused, pausedAt, acc, dur, breath, raf, bells, lastPhase, lastCycle, wake }
 
 function renderMed() {
-  $('#medDur').innerHTML = MED_DURS.map(m => `<button class="preset ${m === medPref.min ? 'active' : ''}" data-m="${m}">${m}分</button>`).join('');
+  $('#medDur').innerHTML = MED_DURS.map(m => `<button class="preset ${m === medPref.min ? 'active' : ''}" data-m="${m}">${T('%1分', m)}</button>`).join('');
   $('#medKind').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.k === medPref.kind));
   const list = BREATHS.filter(b => b.kind === medPref.kind);
   if (!list.some(b => b.id === medPref.breath)) medPref.breath = list[0].id;
   if (lockedBreath(medPref.breath)) { const f = list.find(b => !lockedBreath(b.id)); medPref.breath = f ? f.id : 'none'; if (!f) medPref.kind = 'mind'; save('ft.medPref', medPref); }
-  $('#medBreath').innerHTML = list.map(b => `<button class="preset ${b.id === medPref.breath ? 'active' : ''}" data-b="${b.id}">${b.label}${lockedBreath(b.id) ? '<span class="lk" aria-label="Plus"></span>' : ''}${b.sub ? `<small>${b.sub}</small>` : ''}</button>`).join('');
-  $('#medHint').textContent = KIND_HINT[medPref.kind];
+  $('#medBreath').innerHTML = list.map(b => `<button class="preset ${b.id === medPref.breath ? 'active' : ''}" data-b="${b.id}">${T(b.label)}${lockedBreath(b.id) ? '<span class="lk" aria-label="Plus"></span>' : ''}${b.sub ? `<small>${T(b.sub)}</small>` : ''}</button>`).join('');
+  $('#medHint').textContent = T(KIND_HINT[medPref.kind]);
   $('#customBreath').hidden = medPref.breath !== 'custom'; $('#cbIn').value = medPref.custom.in; $('#cbHold').value = medPref.custom.hold; $('#cbOut').value = medPref.custom.out;
   $('#bellSeg').querySelectorAll('button').forEach(b => b.classList.toggle('active', Number(b.dataset.b) === Number(medPref.bell)));
-  { const br = BREATHS.find(b => b.id === medPref.breath); const ph = breathPhases(br); $('#breathDesc').textContent = br && ph ? `${br.kind === 'relax' ? 'リラックス' : 'マインドフルネス'} · ${br.id === 'custom' ? ph.map(x => x[1]).join('-') : br.label}${br.sub && br.id !== 'custom' ? '（' + br.sub + '）' : ''}${medPref.bell ? ` · ベル${medPref.bell}分` : ''}` : `ガイドなし · ゆっくり、吸って。吐いて。${medPref.bell ? ` · ベル${medPref.bell}分` : ''}`; }
+  { const br = BREATHS.find(b => b.id === medPref.breath); const ph = breathPhases(br); $('#breathDesc').textContent = br && ph ? `${T(br.kind === 'relax' ? 'リラックス' : 'マインドフルネス')} · ${br.id === 'custom' ? ph.map(x => x[1]).join('-') : T(br.label)}${br.sub && br.id !== 'custom' ? ' (' + T(br.sub) + ')' : ''}${medPref.bell ? T(' · ベル%1分', medPref.bell) : ''}` : `${T('ガイドなし · ゆっくり、吸って。吐いて。')}${medPref.bell ? T(' · ベル%1分', medPref.bell) : ''}`; }
   $('#medDur').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.min = Number(b.dataset.m); save('ft.medPref', medPref); renderMed(); });
   $('#medKind').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.kind = b.dataset.k; save('ft.medPref', medPref); renderMed(); });
   $('#medBreath').querySelectorAll('button').forEach(b => b.onclick = () => { if (lockedBreath(b.dataset.b)) { openPaywall('breath'); return; } medPref.breath = b.dataset.b; save('ft.medPref', medPref); renderMed(); });
   const wk = Date.now() - 7 * 86400000; const week = meds.filter(m => m.ts >= wk);
   const total = meds.reduce((a, m) => a + m.min, 0);
-  $('#medStats').innerHTML = meds.length ? `今週 <b>${week.length}回 · ${week.reduce((a, m) => a + m.min, 0)}分</b> · これまで <b>${meds.length}回 · ${total}分</b>` : '静かに座る時間を、記録に残していきます';
+  $('#medStats').innerHTML = meds.length ? T('今週 <b>%1回 · %2分</b> · これまで <b>%3回 · %4分</b>', week.length, week.reduce((a, m) => a + m.min, 0), meds.length, total) : T('静かに座る時間を、記録に残していきます');
   const desc = [...meds].sort((a, b) => b.ts - a.ts); const shown = medShowAll ? desc : desc.slice(0, 5);
-  $('#medList').innerHTML = shown.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>${fmtDate(m.ts)} ${pad(new Date(m.ts).getHours())}:${pad(new Date(m.ts).getMinutes())}<span class="src">${br ? (br.kind === 'relax' ? 'リラックス' : 'マインドフルネス') + ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span></span><b>${esc(m.min)}分</b><button class="del" data-id="${esc(m.id)}" aria-label="削除">×</button></li>`; }).join('');
-  $('#medList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この瞑想の記録を削除しますか？', '削除')) { meds = meds.filter(m => m.id !== b.dataset.id); save('ft.meditations', meds); renderMed(); renderCalendar(); } });
-  const more = $('#medMore'); more.hidden = desc.length <= 5; more.textContent = medShowAll ? '閉じる' : `すべての記録 (${desc.length})`;
+  $('#medList').innerHTML = shown.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>${fmtDate(m.ts)} ${pad(new Date(m.ts).getHours())}:${pad(new Date(m.ts).getMinutes())}<span class="src">${br ? T(br.kind === 'relax' ? 'リラックス' : 'マインドフルネス') + ' · ' + T(br.label) : ''}${m.completed === false ? ' · ' + T('早めに終了') : ''}</span></span><b>${T('%1分', esc(m.min))}</b><button class="del" data-id="${esc(m.id)}" aria-label="削除">×</button></li>`; }).join('');
+  $('#medList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask(T('この瞑想の記録を削除しますか？'), T('削除'))) { meds = meds.filter(m => m.id !== b.dataset.id); save('ft.meditations', meds); renderMed(); renderCalendar(); } });
+  const more = $('#medMore'); more.hidden = desc.length <= 5; more.textContent = medShowAll ? T('閉じる') : T('すべての記録 (%1)', desc.length);
   $('#medEmpty').hidden = meds.length > 0;
 }
 ['cbIn', 'cbHold', 'cbOut'].forEach((id, i) => { $('#' + id).onchange = e => { const k = ['in', 'hold', 'out'][i]; const lim = [[1, 30], [0, 30], [1, 40]][i]; medPref.custom[k] = Math.max(lim[0], Math.min(lim[1], Number(e.target.value) || lim[0])); save('ft.medPref', medPref); renderMed(); }; });
@@ -1689,8 +1765,8 @@ function startMed() {
   audio.prime(); audio.bowl(330, 0.14, 8);
   const ov = $('#medOverlay'); ov.hidden = false; $('#medDone').hidden = true; $('#medCtl').hidden = false; $('#breath').hidden = false; $('#medTime').hidden = false;
   requestAnimationFrame(() => { ov.classList.add('show'); $('#medPause').focus({ preventScroll: true }); });
-  $('#medSub').textContent = med.breath.phases ? (breath.id === 'custom' ? med.breath.phases.map(x => x[1]).join('-') : breath.label) : '呼吸に意識を向けて';
-  $('#medPause').textContent = '一時停止';
+  $('#medSub').textContent = med.breath.phases ? (breath.id === 'custom' ? med.breath.phases.map(x => x[1]).join('-') : T(breath.label)) : T('呼吸に意識を向けて');
+  $('#medPause').textContent = T('一時停止');
   keepAwake().then(w => { if (med) med.wake = w; });
   ripple.burst(2);
   med.raf = requestAnimationFrame(medFrame);
@@ -1710,7 +1786,7 @@ function medFrame(now) {
     // scale: inhale grows .55 -> 1, exhale shrinks 1 -> .55, hold keeps the previous size
     let sc; if (name === '吸う') sc = 0.55 + 0.45 * ease(pos); else if (name === '吐く') sc = 1 - 0.45 * ease(pos); else sc = ph[(idx + ph.length - 1) % ph.length][0] === '吸う' ? 1 : 0.55;
     C.style.transform = `scale(${sc})`; R.style.transform = `scale(${sc})`;
-    $('#bPhase').textContent = name; $('#bCnt').textContent = `${Math.min(secs, Math.floor(pos * secs) + 1)} / ${secs}`;
+    $('#bPhase').textContent = T(name); $('#bCnt').textContent = `${Math.min(secs, Math.floor(pos * secs) + 1)} / ${secs}`;
     const cycleNo = Math.floor(e / cyc);
     if (idx !== med.lastPhase || cycleNo !== med.lastCycle) { med.lastPhase = idx; med.lastCycle = cycleNo; if (name === '吸う') ripple.burst(1); }
   } else {
@@ -1728,13 +1804,13 @@ function finishMed(completed) {
   if (completed) { audio.bowl(330, 0.16, 9); setTimeout(() => audio.bowl(330, 0.14, 9), 2600); setTimeout(() => audio.bowl(330, 0.12, 9), 5200); ripple.burst(4); }
   if (mins >= 1) { meds.push({ id: String(Date.now()), ts: Date.now(), min: mins, breath: med.breath.id, kind: med.breath.kind, completed }); save('ft.meditations', meds); renderCalendar(); }
   $('#medCtl').hidden = true; $('#breath').hidden = true; $('#medTime').hidden = true; $('#medSub').textContent = '';
-  $('#medDone').hidden = false; $('#medDoneMsg').textContent = completed ? `${mins}分の瞑想を終えました` : (mins >= 1 ? `${mins}分の瞑想を記録しました` : '短い時間でも、座れたことに変わりはありません');
+  $('#medDone').hidden = false; $('#medDoneMsg').textContent = completed ? T('%1分の瞑想を終えました', mins) : (mins >= 1 ? T('%1分の瞑想を記録しました', mins) : T('短い時間でも、座れたことに変わりはありません'));
   renderMed();
 }
 function closeMed() { const ov = $('#medOverlay'); ov.classList.remove('show'); setTimeout(() => { ov.hidden = true; }, 800); med = null; }
 $('#medStart').onclick = startMed;
-$('#medPause').onclick = () => { if (!med) return; const now = performance.now(); if (med.paused) { med.paused = false; med.t0 = now; $('#medPause').textContent = '一時停止'; if (native) native.scheduleMed(Date.now() + (med.dur - medElapsed(now))); } else { med.acc += now - med.t0; med.paused = true; $('#medPause').textContent = '再開'; if (native) native.cancelMed(); } };
-$('#medStop').onclick = async () => { if (!med) return; const wasPaused = med.paused; if (!wasPaused) $('#medPause').click(); if (await ask('ここで終了しますか？ 1分以上なら記録に残ります。', '終了')) finishMed(false); else if (!wasPaused) $('#medPause').click(); };
+$('#medPause').onclick = () => { if (!med) return; const now = performance.now(); if (med.paused) { med.paused = false; med.t0 = now; $('#medPause').textContent = T('一時停止'); if (native) native.scheduleMed(Date.now() + (med.dur - medElapsed(now))); } else { med.acc += now - med.t0; med.paused = true; $('#medPause').textContent = T('再開'); if (native) native.cancelMed(); } };
+$('#medStop').onclick = async () => { if (!med) return; const wasPaused = med.paused; if (!wasPaused) $('#medPause').click(); if (await ask(T('ここで終了しますか？ 1分以上なら記録に残ります。'), T('終了'))) finishMed(false); else if (!wasPaused) $('#medPause').click(); };
 $('#medClose').onclick = closeMed;
 document.addEventListener('visibilitychange', () => { if (!document.hidden && med && !med.done) keepAwake().then(w => { if (med) med.wake = w; }); });
 renderMed();
@@ -1745,7 +1821,6 @@ const TITLE_I18N = {
   ja: { tag:'禅と、時。', copy:'自分を整える時間を、<br>日常に。', start:'はじめる', foot:'断食と瞑想を、ひとつに。' },
   en: { tag:'Zen and time.', copy:'Make time<br>for yourself.', start:'Begin', foot:'Fasting and meditation, in one.' },
 };
-let lang = load('ft.lang', 'ja');
 function renderTitleLang() {
   const t = TITLE_I18N[lang] || TITLE_I18N.ja;
   $('#title').querySelectorAll('[data-i]').forEach(el => { el.innerHTML = t[el.dataset.i]; });
@@ -1758,7 +1833,7 @@ function renderTitleLang() {
   renderTitleLang();
   const dismiss = () => { if (ti.classList.contains('out')) return; ti.classList.add('out'); const first = !load('ft.welcomed', false); save('ft.welcomed', true); setTimeout(() => ti.remove(), 1100); if (first && !load('ft.onboarded', false)) runOnboarding(); };
   $('#startApp').onclick = dismiss;
-  $('#langBtn').onclick = e => { e.stopPropagation(); lang = lang === 'ja' ? 'en' : 'ja'; save('ft.lang', lang); renderTitleLang(); };
+  $('#langBtn').onclick = e => { e.stopPropagation(); lang = lang === 'ja' ? 'en' : 'ja'; save('ft.lang', lang); renderTitleLang(); if (welcomed) location.reload(); else { applyStaticLang(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); renderWeight(); renderMed(); renderSound(); } };
   if (welcomed) { ti.addEventListener('click', e => { if (!e.target.closest('.lang')) dismiss(); }); setTimeout(dismiss, 1900); }
 }
 
@@ -1766,8 +1841,8 @@ function renderTitleLang() {
 const BACKUP_KEYS = ['ft.history', 'ft.weights', 'ft.meditations', 'ft.wgoal', 'ft.medPref', 'ft.settings', 'ft.state'];
 function backupText() { const data = { app: 'ZENTOKI', version: 1, exportedAt: new Date().toISOString() }; BACKUP_KEYS.forEach(k => { const v = load(k, null); if (v !== null) data[k] = v; }); return JSON.stringify(data, null, 2); }
 function restoreFrom(text) {
-  let d; try { d = JSON.parse(text); } catch { toast('読み込めませんでした。書き出したテキストか確認してください'); return false; }
-  if (!d || d.app !== 'ZENTOKI') { toast('ZENTOKIのバックアップではないようです'); return false; }
+  let d; try { d = JSON.parse(text); } catch { toast(T('読み込めませんでした。書き出したテキストか確認してください')); return false; }
+  if (!d || d.app !== 'ZENTOKI') { toast(T('ZENTOKIのバックアップではないようです')); return false; }
   const num = (v, lo, hi) => typeof v === 'number' && isFinite(v) && v >= lo && v <= hi;
   const idOk = v => (typeof v === 'string' || typeof v === 'number') && String(v).length <= 64;
   const now = Date.now() + 86400000, y2000 = 946684800000;
@@ -1786,20 +1861,20 @@ function restoreFrom(text) {
   save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist();
   renderPresets(); renderTimer.lastIdx = -2; renderAll(); renderWeight(); renderMed(); renderCalendar(); renderSound(); ripple.set(settings.ripple); if (state.start) startTick();
   if (native) native.scheduleFast();
-  toast(n ? `${n}件の記録を読み込みました` : '新しい記録はありませんでした（重複は除外）');
+  toast(n ? T('%1件の記録を読み込みました', n) : T('新しい記録はありませんでした（重複は除外）'));
   return true;
 }
 $('#exportBtn').onclick = () => {
   const blob = new Blob([backupText()], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zentoki-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-  toast('書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください');
+  toast(T('書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください'));
 };
-$('#copyBtn').onclick = async () => { try { await navigator.clipboard.writeText(backupText()); toast('コピーしました。メモなどに貼り付けて保存してください'); } catch { toast('コピーできませんでした'); } };
+$('#copyBtn').onclick = async () => { try { await navigator.clipboard.writeText(backupText()); toast(T('コピーしました。メモなどに貼り付けて保存してください')); } catch { toast(T('コピーできませんでした')); } };
 $('#importBtn').onclick = () => { $('#settingsDialog').close(); $('#pasteDialog').showModal(); };
 $('#pasteCancel').onclick = () => $('#pasteDialog').close();
 $('#pasteOk').onclick = () => { const t = $('#pasteArea').value.trim(); if (!t) { $('#importFile').click(); return; } if (restoreFrom(t)) { $('#pasteArea').value = ''; $('#pasteDialog').close(); } };
 $('#importFile').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (restoreFrom(await f.text())) $('#pasteDialog').close(); };
-$('#clearBtn').onclick = async () => { $('#settingsDialog').close(); if (await ask('断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。', '削除')) { history = []; weights = []; meds = []; wgoal = { start:null, goal:null, height:null }; save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist(); renderHistory(); renderWeight(); renderMed(); renderCalendar(); toast('削除しました'); } };
+$('#clearBtn').onclick = async () => { $('#settingsDialog').close(); if (await ask(T('断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。'), T('削除'))) { history = []; weights = []; meds = []; wgoal = { start:null, goal:null, height:null }; save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist(); renderHistory(); renderWeight(); renderMed(); renderCalendar(); toast(T('削除しました')); } };
 
 // ---------- policy ----------
 const POLICY_JA = `<p><b>データについて</b><br>断食・瞑想・体重の記録と設定は、お使いの端末のブラウザ内にのみ保存されます。ZENTOKIはサーバーを持たず、記録を外部に送信することはありません。アカウント登録も不要です。</p>
@@ -1809,10 +1884,22 @@ const POLICY_JA = `<p><b>データについて</b><br>断食・瞑想・体重�
 <p><b>医療に関する注意</b><br>ZENTOKIは医療機器ではなく、診断や治療、医療的助言を行うものではありません。「体の変化」の表示は一般的な目安です。持病のある方、妊娠中・授乳中の方、未成年の方、体調に不安のある方は、断食を始める前に医師にご相談ください。バイノーラルビートは光や音の刺激に敏感な方、てんかんの既往がある方は使用をお控えください。</p>
 <p><b>免責</b><br>本アプリの利用により生じたいかなる損害についても、開発者は責任を負いかねます。体調が優れないときは無理をせず中止してください。</p>
 <p><b>フォント</b><br>文字の表示にGoogle Fontsを利用しており、ブラウザからGoogleへフォントの取得リクエストが送られます。</p>`;
-$('#policyBtn').onclick = () => { $('#policyBody').innerHTML = POLICY_JA; $('#policyDialog').showModal(); };
+const POLICY_EN = `<p><b>Your data</b><br>Your fasting, meditation and weight records, and your settings, are stored only in this device's browser. ZENTOKI has no server and never sends your records anywhere. No account is needed.</p>
+<p><b>Backups</b><br>Clearing your browser or device data also clears your records. Keep the files you export from Settings → Backup somewhere safe.</p>
+<p><b>Apple Health import</b><br>Only weight entries are read from an exported file, on your device. Nothing leaves your device.</p>
+<p><b>Notifications and sound</b><br>Notifications appear only with your permission. All sounds are generated inside the app; no audio files are downloaded.</p>
+<p><b>Health notice</b><br>ZENTOKI is not a medical device and does not provide diagnosis, treatment or medical advice. The “body changes” shown are general guidance only. If you have a medical condition, are pregnant or breastfeeding, are under 18, or have any concerns, consult a doctor before fasting. Do not use binaural beats if you are sensitive to light or sound stimulation or have a history of epilepsy.</p>
+<p><b>Disclaimer</b><br>The developer accepts no liability for any loss arising from use of this app. If you feel unwell, stop and rest.</p>
+<p><b>Fonts</b><br>Text is rendered with Google Fonts, so your browser requests font files from Google.</p>`;
+$('#policyBtn').onclick = () => { $('#policyBody').innerHTML = lang === 'en' ? POLICY_EN : POLICY_JA; $('#policyDialog').showModal(); };
 $('#policyClose').onclick = () => $('#policyDialog').close();
 
 // ---------- onboarding (first launch only) ----------
+const OB_EN = [
+  { t:'Fasting', p:'Pick a plan and tap “Start fasting”.<br>The ring shows time passing,<br>and quietly notes what your body is doing.' },
+  { t:'Meditation', p:'Choose a length and a breathing pattern.<br>Follow the circle as it opens and closes:<br>slowly in, slowly out.' },
+  { t:'Log', p:'The days you kept going, and the days you rested.<br>Look back calmly<br>on the calendar.' },
+];
 const OB = [
   { ico:'<circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 12l4-2"/>', t:'断食', p:'プランを選んで「断食をはじめる」。<br>リングが時間の流れを映し、<br>体の変化を静かに知らせます。' },
   { ico:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>', t:'瞑想', p:'時間と呼吸法を選ぶだけ。<br>円の広がりに合わせて、<br>ゆっくり吸って、吐いて。' },
@@ -1820,14 +1907,14 @@ const OB = [
 ];
 function runOnboarding() {
   const ob = $('#onboard'); let i = 0; ob.hidden = false;
-  const draw = () => { const o = OB[i]; $('#obCard').innerHTML = `<div class="ob-ico"><svg viewBox="0 0 24 24">${o.ico}</svg></div><h2>${o.t}</h2><p>${o.p}</p>`; $('#obCard').style.animation = 'none'; void $('#obCard').offsetWidth; $('#obCard').style.animation = ''; $('#obDots').innerHTML = OB.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join(''); $('#obNext').textContent = i === OB.length - 1 ? 'はじめる' : '次へ'; };
+  const draw = () => { const o = OB[i]; const e = lang === 'en' ? OB_EN[i] : o; $('#obCard').innerHTML = `<div class="ob-ico"><svg viewBox="0 0 24 24">${o.ico}</svg></div><h2>${e.t}</h2><p>${e.p}</p>`; $('#obCard').style.animation = 'none'; void $('#obCard').offsetWidth; $('#obCard').style.animation = ''; $('#obDots').innerHTML = OB.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join(''); $('#obNext').textContent = i === OB.length - 1 ? T('はじめる') : T('次へ'); };
   const end = () => { save('ft.onboarded', true); ob.classList.add('out'); setTimeout(() => ob.remove(), 900); };
   $('#obNext').onclick = () => { if (i < OB.length - 1) { i++; draw(); } else end(); };
   $('#obSkip').onclick = end;
   draw();
 }
 
-if (native) { $('#notifyHint').textContent = '通知はアプリを閉じていても、目標やステージの時刻に届きます。'; document.querySelectorAll('.s-hint').forEach(el => { if (/マナーモード/.test(el.textContent)) el.textContent = '音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。'; }); }
+if (native) { $('#notifyHint').textContent = T('通知はアプリを閉じていても、目標やステージの時刻に届きます。'); document.querySelectorAll('.s-hint').forEach(el => { if (/マナーモード|silent mode/.test(el.textContent)) el.textContent = T('音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。'); }); }
 
 // ---------- ZENTOKI Plus (one-time purchase) ----------
 // Fill in the web payment link / verify endpoint (Stripe + Cloudflare Worker) and the RevenueCat key to turn billing on.
@@ -1835,23 +1922,23 @@ if (native) { $('#notifyHint').textContent = '通知はアプリを閉じてい�
 function setPlus(active, source, grant) { plus = { active, source: active ? source : null, since: active ? (plus.since || Date.now()) : null, grant: active ? (grant || null) : null }; save('ft.plus', plus); renderSound(); renderMed(); renderPlusUI(); }
 function renderPlusUI() {
   $('#plusRow').hidden = !PLUS.enabled;
-  const st = $('#plusStatus'); st.textContent = plus.active ? '有効' : '未購入'; st.classList.toggle('on', !!plus.active);
+  const st = $('#plusStatus'); st.textContent = plus.active ? T('有効') : T('未購入'); st.classList.toggle('on', !!plus.active);
   $('#plusPrice').firstChild.textContent = PLUS.price;
-  $('#plusBuy').textContent = plus.active ? '購入済み' : '購入する'; $('#plusBuy').disabled = !!plus.active;
+  $('#plusBuy').textContent = plus.active ? T('購入済み') : T('購入する'); $('#plusBuy').disabled = !!plus.active;
   $('#plusKeyBtn').hidden = !!native; $('#plusLegal').hidden = !!native;
 }
 function openPaywall(reason) { renderPlusUI(); $('#plusDialog').showModal(); }
 // --- web: Stripe payment link + license key verified by a small worker ---
 async function verifyKey(key) {
   key = String(key || '').trim().toUpperCase();
-  if (!/^ZK(-[A-Z0-9]{4}){3,4}$/.test(key)) { toast('キーの形式が違います'); return false; }
-  if (!PLUS.web.verifyUrl) { toast('この版ではライセンスキーを使えません'); return false; }
+  if (!/^ZK(-[A-Z0-9]{4}){3,4}$/.test(key)) { toast(T('キーの形式が違います')); return false; }
+  if (!PLUS.web.verifyUrl) { toast(T('この版ではライセンスキーを使えません')); return false; }
   try {
     const r = await fetch(PLUS.web.verifyUrl.replace(/\/$/, '') + '/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
     const j = await r.json().catch(() => ({}));
-    if (r.ok && j.ok) { setPlus(true, 'web-license', { key, sig: j.sig, at: Date.now() }); toast('ZENTOKI Plus が有効になりました'); return true; }
-    toast(j.error === 'revoked' ? 'このキーは無効になっています' : 'キーが確認できませんでした'); return false;
-  } catch { toast('通信できませんでした。あとでもう一度お試しください'); return false; }
+    if (r.ok && j.ok) { setPlus(true, 'web-license', { key, sig: j.sig, at: Date.now() }); toast(T('ZENTOKI Plus が有効になりました')); return true; }
+    toast(T(j.error === 'revoked' ? 'このキーは無効になっています' : 'キーが確認できませんでした')); return false;
+  } catch { toast(T('通信できませんでした。あとでもう一度お試しください')); return false; }
 }
 // --- native: RevenueCat (App Store / Google Play) ---
 const rc = (() => {
@@ -1861,12 +1948,12 @@ const rc = (() => {
   async function init() { if (ready) return; try { await P.configure({ apiKey: PLUS.ios.rcApiKey }); ready = true; await refresh(); } catch (e) { console.warn('rc init', e); } }
   function apply(info) { const ent = info && info.customerInfo ? info.customerInfo.entitlements : (info && info.entitlements); const on = !!(ent && ent.active && ent.active[PLUS.ios.entitlement]); if (on !== !!plus.active) setPlus(on, 'ios-iap'); }
   async function refresh() { try { apply(await P.getCustomerInfo()); } catch {} }
-  async function buy() { await init(); try { const off = await P.getOfferings(); const pkg = off && off.current && (off.current.lifetime || (off.current.availablePackages || [])[0]); if (!pkg) { toast('商品を読み込めませんでした'); return; } const res = await P.purchasePackage({ aPackage: pkg }); apply(res); if (plus.active) toast('ZENTOKI Plus が有効になりました'); } catch (e) { if (!(e && /cancel/i.test(String(e.message || e)))) toast('購入を完了できませんでした'); } }
-  async function restore() { await init(); try { apply(await P.restorePurchases()); toast(plus.active ? '購入を復元しました' : '復元できる購入が見つかりませんでした'); } catch { toast('復元できませんでした'); } }
+  async function buy() { await init(); try { const off = await P.getOfferings(); const pkg = off && off.current && (off.current.lifetime || (off.current.availablePackages || [])[0]); if (!pkg) { toast(T('商品を読み込めませんでした')); return; } const res = await P.purchasePackage({ aPackage: pkg }); apply(res); if (plus.active) toast('ZENTOKI Plus が有効になりました'); } catch (e) { if (!(e && /cancel/i.test(String(e.message || e)))) toast(T('購入を完了できませんでした')); } }
+  async function restore() { await init(); try { apply(await P.restorePurchases()); toast(T(plus.active ? '購入を復元しました' : '復元できる購入が見つかりませんでした')); } catch { toast(T('復元できませんでした')); } }
   init();
   return { buy, restore, refresh };
 })();
-$('#plusBuy').onclick = () => { if (plus.active) return; if (rc) rc.buy(); else if (PLUS.web.paymentLink) window.open(PLUS.web.paymentLink, '_blank', 'noopener'); else toast('準備中です'); };
+$('#plusBuy').onclick = () => { if (plus.active) return; if (rc) rc.buy(); else if (PLUS.web.paymentLink) window.open(PLUS.web.paymentLink, '_blank', 'noopener'); else toast(T('準備中です')); };
 $('#plusRestore').onclick = () => { if (rc) rc.restore(); else if (plus.grant && plus.grant.key) verifyKey(plus.grant.key); else $('#keyDialog').showModal(); };
 $('#plusKeyBtn').onclick = () => { $('#keyInput').value = ''; $('#keyDialog').showModal(); };
 $('#keyCancel').onclick = () => $('#keyDialog').close();
