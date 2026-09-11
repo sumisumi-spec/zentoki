@@ -381,6 +381,14 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .plus-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:6px;font-size:14px}
 .plus-row b{font-weight:400;font-size:12px;letter-spacing:.1em;color:var(--ink2)}
 .plus-row b.on{color:#fff}
+.week-sum{font-family:var(--serif);font-size:14px;color:var(--ink2);line-height:1.8;margin-top:22px;letter-spacing:.04em;min-height:1em}
+.week-sum b{color:var(--ink);font-weight:400}
+.bell-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;font-size:13px;color:var(--ink2)}
+.bell-row .seg{flex:1;max-width:260px}
+.bell-row .seg button{padding:9px 0;font-size:12px}
+.cb-row{display:flex;gap:10px;align-items:center;margin-top:12px;font-size:12px;color:var(--ink3)}
+.cb-row label{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.cb-row input{width:100%;background:transparent;border:0;border-bottom:1px solid var(--ink4);color:var(--ink);padding:6px 0;font:inherit;font-size:20px;font-weight:200;text-align:center;outline:none;border-radius:0}
 /* dialogs */
 dialog{border:0;border-radius:20px;background:#0c0c0e;color:var(--ink);padding:26px 24px;width:min(90vw,360px);box-shadow:0 30px 80px rgba(0,0,0,.7);border:1px solid var(--line)}
 dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(6px)}
@@ -484,7 +492,13 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
     <div id="breathPanel" hidden>
       <div class="seg med-kind" id="medKind"><button data-k="mind">マインドフルネス</button><button data-k="relax">リラックス</button></div>
       <div class="med-row" id="medBreath" style="margin-top:0"></div>
+      <div class="cb-row" id="customBreath" hidden>
+        <label>吸う<input type="number" id="cbIn" min="1" max="30" inputmode="numeric"></label>
+        <label>止める<input type="number" id="cbHold" min="0" max="30" inputmode="numeric"></label>
+        <label>吐く<input type="number" id="cbOut" min="1" max="40" inputmode="numeric"></label>
+      </div>
       <div class="med-hint" id="medHint"></div>
+      <div class="bell-row"><span>間隔ベル</span><div class="seg" id="bellSeg"><button data-b="0">なし</button><button data-b="1">1分</button><button data-b="3">3分</button><button data-b="5">5分</button></div></div>
     </div>
     <button class="pill-lg" id="medStart">瞑想をはじめる</button>
     <div class="med-stats" id="medStats"></div>
@@ -527,6 +541,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 <div class="view" id="viewLog">
   <section class="blk" style="padding-top:22px">
     <h2 class="h l">記録</h2><div class="rule l"></div><p class="lead l">ふりかえる。</p>
+    <p class="week-sum" id="weekSum"></p>
     <div class="stats">
       <div class="stat"><b id="stTotal">0</b><span>回</span></div>
       <div class="stat"><b id="stStreak">0</b><span>連続日</span></div>
@@ -620,6 +635,15 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
   <p class="hint" style="margin-top:0">購入完了ページに表示されたキー（ZK- で始まる文字列）を入力してください。</p>
   <input type="text" id="keyInput" placeholder="ZK-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" style="width:100%;background:var(--fill);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:inherit;font-size:16px;letter-spacing:.1em;text-align:center;outline:none">
   <div class="row"><button id="keyCancel">キャンセル</button><button class="ok" id="keyOk">有効にする</button></div>
+</dialog>
+
+<dialog id="noteDialog">
+  <h3>ひとこと（任意）</h3>
+  <div class="seg" id="moodSeg" style="margin-bottom:10px">
+    <button data-m="すっきり">すっきり</button><button data-m="ふつう">ふつう</button><button data-m="集中できた">集中できた</button><button data-m="眠かった">眠かった</button><button data-m="つらかった">つらかった</button>
+  </div>
+  <input type="text" id="noteInput" maxlength="60" placeholder="今日の体調や気づき" style="width:100%;background:var(--fill);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:inherit;font-size:15px;outline:none">
+  <div class="row"><button id="noteSkip">あとで</button><button class="ok" id="noteOk">残す</button></div>
 </dialog>
 
 <dialog id="askDialog">
@@ -785,13 +809,11 @@ function renderPresets() {
     const b = document.createElement('button');
     b.className = 'preset' + (p.id === state.preset ? ' active' : '');
     b.innerHTML = `${p.label}${p.sub ? `<small>${p.sub}</small>` : ''}`;
-    b.disabled = !!state.start;
-    b.onclick = () => { state.preset = p.id; persist(); renderPresets(); renderAll(); };
+    b.onclick = async () => { if (p.id === state.preset) return; if (state.start) { if (!(await ask(`プランを ${p.label} に変更しますか？ 開始時刻はそのままで、目標だけ変わります。`, '変更する'))) return; state.preset = p.id; markPassed(); persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); if (native) native.scheduleFast(); toast(`目標を ${goalHours()} 時間にしました`); return; } state.preset = p.id; persist(); renderPresets(); renderAll(); };
     box.appendChild(b);
   });
   $('#customRow').hidden = state.preset !== 'custom';
   $('#customHours').value = state.customHours;
-  $('#customHours').disabled = !!state.start;
   const active = box.querySelector('.active'); if (active && (active.offsetLeft + active.offsetWidth > box.clientWidth + box.scrollLeft || active.offsetLeft < box.scrollLeft)) box.scrollTo({ left: active.offsetLeft - 48, behavior:'instant' });
 }
 
@@ -867,7 +889,7 @@ function renderHistory() {
   list.innerHTML = sorted.slice(0, histShown).map(r => {
     const dur = r.end - r.start;
     const ok = dur >= r.goal * H;
-    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · 早めに終了'}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h</div><button class="del" data-id="${esc(r.id)}" aria-label="削除">×</button></li>`;
+    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · 早めに終了'}${r.mood ? ' · ' + esc(r.mood) : ''}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h${r.note ? `<br><span style="color:var(--ink2)">${esc(r.note)}</span>` : ''}</div><button class="del" data-id="${esc(r.id)}" aria-label="削除">×</button></li>`;
   }).join('');
   $('#historyEmpty').hidden = list.hidden || history.length > 0;
   $('#histMore').hidden = list.hidden || history.length <= histShown; $('#histMore').textContent = `さらに表示（残り${Math.max(0, history.length - histShown)}件）`;
@@ -878,6 +900,12 @@ function renderHistory() {
   $('#stAvg').textContent = durs.length ? fmtH(durs.reduce((a, b) => a + b, 0) / durs.length) : '0h';
   $('#stMax').textContent = durs.length ? fmtH(Math.max(...durs)) : '0h';
   $('#stStreak').textContent = streak();
+  { const now = Date.now(), w1 = history.filter(r => r.end >= now - 7 * 86400000), w0 = history.filter(r => r.end >= now - 14 * 86400000 && r.end < now - 7 * 86400000);
+    const avg = a => a.length ? a.reduce((x, r) => x + (r.end - r.start), 0) / a.length : 0;
+    const el = $('#weekSum');
+    if (!w1.length) el.innerHTML = history.length ? 'この7日間は記録がありません。焦らず、次の一回から。' : '';
+    else { const d = w0.length ? (avg(w1) - avg(w0)) / H : null; el.innerHTML = `この7日間は <b>${w1.length}回</b>、平均 <b>${fmtH(avg(w1))}</b>${d !== null ? `。前の7日より <b>${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)}h</b>` : ''}。`; }
+  }
 
   const totalMs = durs.reduce((a, b) => a + b, 0);
   $('#stHours').textContent = Math.round(totalMs / H) + 'h';
@@ -926,8 +954,10 @@ const native = (() => {
     if (settings.stageNotify) STAGES.forEach((st, i) => { if (st.h <= 0) return; const at = state.start + st.h * H; if (at > now + 5000 && at < state.start + goalMs()) list.push({ id: ids.stage + i, title: st.t, body: `${st.h}時間経過。${st.d}`, schedule: { at: new Date(at) }, sound: 'default' }); });
     if (list.length) { try { await LN.schedule({ notifications: list }); } catch {} }
   }
+  async function cancelMed() { if (!LN) return; try { await LN.cancel({ notifications: [{ id: 1300 }] }); } catch {} }
+  async function scheduleMed(at) { if (!LN) return; await cancelMed(); if (!(await perm())) return; try { await LN.schedule({ notifications: [{ id: 1300, title: '瞑想を終えました', body: 'おつかれさま。ゆっくり戻ってきてください。', schedule: { at: new Date(at) }, sound: 'default' }] }); } catch {} }
   return {
-    scheduleFast, cancelFast, perm,
+    scheduleFast, cancelFast, perm, scheduleMed, cancelMed,
     keepAwake(on) { try { if (!KA) return; on ? KA.keepAwake() : KA.allowSleep(); } catch {} },
     haptic(kind) { try { if (!HP) return; kind === 'goal' ? HP.notification({ type: 'SUCCESS' }) : HP.impact({ style: 'LIGHT' }); } catch {} },
   };
@@ -965,12 +995,19 @@ async function endFast() {
   }
   if (!ok && !(await ask(`目標まであと${fmtHM(goalMs() - dur)}です。ここで終了しますか？ 記録は残ります。`, '終了する'))) return;
   if (!state.start) return;
-  history.push({ id: String(Date.now()), start: state.start, end: Date.now(), goal: goalHours(), preset: state.preset });
+  const recId = String(Date.now());
+  history.push({ id: recId, start: state.start, end: Date.now(), goal: goalHours(), preset: state.preset });
   state.lastEnd = Date.now(); state.lastEat = eatHours(); state.start = null; notified = { goal:false, stages:[] };
   if (native) native.cancelFast();
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll();
   toast(ok ? `目標達成 · ${fmtHM(dur)}を記録しました` : `${fmtHM(dur)}の断食を記録しました。おつかれさま`); ripple.burst(ok ? 4 : 2); audio.chime(ok ? 'goal' : 'end');
+  setTimeout(() => openNote(recId), 900);
 }
+let noteFor = null, noteMood = '';
+function openNote(id) { noteFor = id; noteMood = ''; $('#noteInput').value = ''; $('#moodSeg').querySelectorAll('button').forEach(b => b.classList.remove('active')); $('#noteDialog').showModal(); }
+$('#moodSeg').querySelectorAll('button').forEach(b => b.onclick = () => { noteMood = noteMood === b.dataset.m ? '' : b.dataset.m; $('#moodSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.m === noteMood)); });
+$('#noteSkip').onclick = () => $('#noteDialog').close();
+$('#noteOk').onclick = () => { const r = history.find(x => x.id === noteFor); if (r) { const t = $('#noteInput').value.trim().slice(0, 60); if (t) r.note = t; else delete r.note; if (noteMood) r.mood = noteMood; else delete r.mood; save('ft.history', history); renderHistory(); } $('#noteDialog').close(); };
 
 function startTick() { clearInterval(tick); tick = setInterval(() => { renderTimer(); renderEating(); }, 1000); }
 
@@ -1334,7 +1371,7 @@ $('#beginOk').onclick = () => {
   if (Date.now() - ts > 7 * 86400000) { toast('7日より前は指定できません'); return; }
   $('#beginDialog').close(); startFast(ts);
 };
-$('#customHours').oninput = e => { state.customHours = Number(e.target.value) || 16; persist(); renderTimer(); };
+$('#customHours').oninput = e => { state.customHours = Math.max(1, Math.min(120, Number(e.target.value) || 16)); if (state.start) markPassed(); persist(); renderTimer.lastIdx = -2; renderTimer(); if (state.start && native) native.scheduleFast(); };
 $('#editStart').onclick = () => { $('#startInput').value = toLocalInput(state.start); $('#startInput').max = toLocalInput(Date.now()); $('#startDialog').showModal(); };
 $('#startCancel').onclick = () => $('#startDialog').close();
 $('#startOk').onclick = () => {
@@ -1392,7 +1429,7 @@ function renderCalDay() {
   if (!calSel) { box.innerHTML = '<div class="t"><span>日付をタップすると、その日の記録が見られます</span></div>'; return; }
   const recs = dayRecords(calSel); const ms = hoursOn(calSel); const md = dayMeds(calSel);
   let html = `<div class="t"><span>${calSel.getMonth() + 1}月${calSel.getDate()}日 ${DAYS[calSel.getDay()]}</span><span>${ms ? '断食 ' + fmtHM(ms) : ''}${md.length ? (ms ? ' · ' : '') + '瞑想 ' + md.reduce((a, m) => a + m.min, 0) + '分' : ''}</span></div>`;
-  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>断食 ${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h${ok ? '' : ' · 早めに終了'}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
+  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>断食 ${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h${ok ? '' : ' · 早めに終了'}${r.mood ? ' · ' + esc(r.mood) : ''}${r.note ? '<br>' + esc(r.note) : ''}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
   else if (ms) html += `<div>別の日に終了した断食の時間です</div>`;
   if (md.length) html += `<ul>${md.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>瞑想 ${fmtTime(m.ts)}${br ? ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span><b>${esc(m.min)}分</b></li>`; }).join('')}</ul>`;
   if (!recs.length && !ms && !md.length) html += `<div>この日は記録がありません</div>`;
@@ -1595,6 +1632,7 @@ const BREATHS = [
   { id:'none',     kind:'mind',  label:'ガイドなし', phases:null },
   { id:'coherent', kind:'mind',  label:'5-5',    sub:'ゆっくり', phases:[['吸う', 5], ['吐く', 5]] },
   { id:'box',      kind:'mind',  label:'ボックス', sub:'4-4-4-4', phases:[['吸う', 4], ['止める', 4], ['吐く', 4], ['止める', 4]] },
+  { id:'custom',   kind:'mind',  label:'カスタム', sub:'秒数を指定', phases:[['吸う', 4], ['止める', 0], ['吐く', 6]] },
   // リラックス: 吐く息を長くして副交感神経を優位に
   { id:'478',      kind:'relax', label:'4-7-8',  sub:'止める', phases:[['吸う', 4], ['止める', 7], ['吐く', 8]] },
   { id:'4-8',      kind:'relax', label:'4-8',    sub:'', phases:[['吸う', 4], ['吐く', 8]] },
@@ -1608,6 +1646,8 @@ const KIND_HINT = {
 };
 let meds = load('ft.meditations', []);
 let medPref = load('ft.medPref', { min: 10, breath: 'coherent', kind: 'mind' });
+if (!medPref.custom) medPref.custom = { in: 4, hold: 0, out: 6 }; if (medPref.bell === undefined) medPref.bell = 0;
+function breathPhases(b) { if (!b || !b.phases) return null; if (b.id !== 'custom') return b.phases; const c = medPref.custom; const ph = [['吸う', c.in]]; if (c.hold > 0) ph.push(['止める', c.hold]); ph.push(['吐く', c.out]); return ph; }
 if (!medPref.kind) medPref.kind = (BREATHS.find(b => b.id === medPref.breath) || BREATHS[0]).kind;
 let medShowAll = false;
 let med = null; // { t0, paused, pausedAt, acc, dur, breath, raf, bells, lastPhase, lastCycle, wake }
@@ -1620,7 +1660,9 @@ function renderMed() {
   if (lockedBreath(medPref.breath)) { const f = list.find(b => !lockedBreath(b.id)); medPref.breath = f ? f.id : 'none'; if (!f) medPref.kind = 'mind'; save('ft.medPref', medPref); }
   $('#medBreath').innerHTML = list.map(b => `<button class="preset ${b.id === medPref.breath ? 'active' : ''}" data-b="${b.id}">${b.label}${lockedBreath(b.id) ? '<span class="lk" aria-label="Plus"></span>' : ''}${b.sub ? `<small>${b.sub}</small>` : ''}</button>`).join('');
   $('#medHint').textContent = KIND_HINT[medPref.kind];
-  { const br = BREATHS.find(b => b.id === medPref.breath); $('#breathDesc').textContent = br && br.phases ? `${br.kind === 'relax' ? 'リラックス' : 'マインドフルネス'} · ${br.label}${br.sub ? '（' + br.sub + '）' : ''}` : 'ガイドなし · ゆっくり、吸って。吐いて。'; }
+  $('#customBreath').hidden = medPref.breath !== 'custom'; $('#cbIn').value = medPref.custom.in; $('#cbHold').value = medPref.custom.hold; $('#cbOut').value = medPref.custom.out;
+  $('#bellSeg').querySelectorAll('button').forEach(b => b.classList.toggle('active', Number(b.dataset.b) === Number(medPref.bell)));
+  { const br = BREATHS.find(b => b.id === medPref.breath); const ph = breathPhases(br); $('#breathDesc').textContent = br && ph ? `${br.kind === 'relax' ? 'リラックス' : 'マインドフルネス'} · ${br.id === 'custom' ? ph.map(x => x[1]).join('-') : br.label}${br.sub && br.id !== 'custom' ? '（' + br.sub + '）' : ''}${medPref.bell ? ` · ベル${medPref.bell}分` : ''}` : `ガイドなし · ゆっくり、吸って。吐いて。${medPref.bell ? ` · ベル${medPref.bell}分` : ''}`; }
   $('#medDur').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.min = Number(b.dataset.m); save('ft.medPref', medPref); renderMed(); });
   $('#medKind').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.kind = b.dataset.k; save('ft.medPref', medPref); renderMed(); });
   $('#medBreath').querySelectorAll('button').forEach(b => b.onclick = () => { if (lockedBreath(b.dataset.b)) { openPaywall('breath'); return; } medPref.breath = b.dataset.b; save('ft.medPref', medPref); renderMed(); });
@@ -1633,6 +1675,8 @@ function renderMed() {
   const more = $('#medMore'); more.hidden = desc.length <= 5; more.textContent = medShowAll ? '閉じる' : `すべての記録 (${desc.length})`;
   $('#medEmpty').hidden = meds.length > 0;
 }
+['cbIn', 'cbHold', 'cbOut'].forEach((id, i) => { $('#' + id).onchange = e => { const k = ['in', 'hold', 'out'][i]; const lim = [[1, 30], [0, 30], [1, 40]][i]; medPref.custom[k] = Math.max(lim[0], Math.min(lim[1], Number(e.target.value) || lim[0])); save('ft.medPref', medPref); renderMed(); }; });
+$('#bellSeg').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.bell = Number(b.dataset.b); save('ft.medPref', medPref); renderMed(); });
 $('#breathCard').onclick = () => { const open = $('#breathPanel').hidden; $('#breathPanel').hidden = !open; $('#breathCard').setAttribute('aria-expanded', open); };
 $('#medMore').onclick = () => { medShowAll = !medShowAll; renderMed(); };
 const fmtMS = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`; };
@@ -1640,11 +1684,12 @@ async function keepAwake() { if (native) { native.keepAwake(true); return { rele
 
 function startMed() {
   const breath = BREATHS.find(b => b.id === medPref.breath) || BREATHS[0];
-  med = { t0: performance.now(), acc: 0, paused: false, dur: medPref.min * 60000, breath, lastPhase: -1, lastCycle: -1, wake: null, done: false };
+  med = { t0: performance.now(), acc: 0, paused: false, dur: medPref.min * 60000, breath: Object.assign({}, breath, { phases: breathPhases(breath) }), lastPhase: -1, lastCycle: -1, wake: null, done: false, lastBell: 0 };
+  if (native) native.scheduleMed(Date.now() + med.dur);
   audio.prime(); audio.bowl(330, 0.14, 8);
   const ov = $('#medOverlay'); ov.hidden = false; $('#medDone').hidden = true; $('#medCtl').hidden = false; $('#breath').hidden = false; $('#medTime').hidden = false;
   requestAnimationFrame(() => { ov.classList.add('show'); $('#medPause').focus({ preventScroll: true }); });
-  $('#medSub').textContent = breath.phases ? breath.label : '呼吸に意識を向けて';
+  $('#medSub').textContent = med.breath.phases ? (breath.id === 'custom' ? med.breath.phases.map(x => x[1]).join('-') : breath.label) : '呼吸に意識を向けて';
   $('#medPause').textContent = '一時停止';
   keepAwake().then(w => { if (med) med.wake = w; });
   ripple.burst(2);
@@ -1672,11 +1717,12 @@ function medFrame(now) {
     const t = e / 1000; const sc = 0.72 + 0.22 * Math.sin(t * Math.PI / 6); // 12 s slow pulse
     C.style.transform = `scale(${sc})`; R.style.transform = `scale(${sc})`; $('#bPhase').textContent = ''; $('#bCnt').textContent = '';
   }
+  if (medPref.bell > 0) { const n = Math.floor(e / (medPref.bell * 60000)); if (n > med.lastBell && left > 3000) { med.lastBell = n; audio.bowl(440, 0.09, 5); ripple.burst(1); } }
   if (left <= 0) finishMed(true);
 }
 const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 function finishMed(completed) {
-  if (!med) return; med.done = true; cancelAnimationFrame(med.raf);
+  if (!med) return; med.done = true; cancelAnimationFrame(med.raf); if (native) native.cancelMed();
   const mins = Math.round(Math.min(medElapsed(performance.now()), med.dur) / 60000);
   try { med.wake && med.wake.release(); } catch {}
   if (completed) { audio.bowl(330, 0.16, 9); setTimeout(() => audio.bowl(330, 0.14, 9), 2600); setTimeout(() => audio.bowl(330, 0.12, 9), 5200); ripple.burst(4); }
@@ -1687,7 +1733,7 @@ function finishMed(completed) {
 }
 function closeMed() { const ov = $('#medOverlay'); ov.classList.remove('show'); setTimeout(() => { ov.hidden = true; }, 800); med = null; }
 $('#medStart').onclick = startMed;
-$('#medPause').onclick = () => { if (!med) return; const now = performance.now(); if (med.paused) { med.paused = false; med.t0 = now; $('#medPause').textContent = '一時停止'; } else { med.acc += now - med.t0; med.paused = true; $('#medPause').textContent = '再開'; } };
+$('#medPause').onclick = () => { if (!med) return; const now = performance.now(); if (med.paused) { med.paused = false; med.t0 = now; $('#medPause').textContent = '一時停止'; if (native) native.scheduleMed(Date.now() + (med.dur - medElapsed(now))); } else { med.acc += now - med.t0; med.paused = true; $('#medPause').textContent = '再開'; if (native) native.cancelMed(); } };
 $('#medStop').onclick = async () => { if (!med) return; const wasPaused = med.paused; if (!wasPaused) $('#medPause').click(); if (await ask('ここで終了しますか？ 1分以上なら記録に残ります。', '終了')) finishMed(false); else if (!wasPaused) $('#medPause').click(); };
 $('#medClose').onclick = closeMed;
 document.addEventListener('visibilitychange', () => { if (!document.hidden && med && !med.done) keepAwake().then(w => { if (med) med.wake = w; }); });
@@ -1725,7 +1771,7 @@ function restoreFrom(text) {
   const num = (v, lo, hi) => typeof v === 'number' && isFinite(v) && v >= lo && v <= hi;
   const idOk = v => (typeof v === 'string' || typeof v === 'number') && String(v).length <= 64;
   const now = Date.now() + 86400000, y2000 = 946684800000;
-  const cleanHist = (inc) => (Array.isArray(inc) ? inc : []).filter(r => r && idOk(r.id) && num(r.start, y2000, now) && num(r.end, y2000, now) && r.end > r.start && num(r.goal, 1, 240)).map(r => ({ id: String(r.id), start: r.start, end: r.end, goal: r.goal, preset: typeof r.preset === 'string' ? r.preset.slice(0, 16) : '' }));
+  const cleanHist = (inc) => (Array.isArray(inc) ? inc : []).filter(r => r && idOk(r.id) && num(r.start, y2000, now) && num(r.end, y2000, now) && r.end > r.start && num(r.goal, 1, 240)).map(r => ({ id: String(r.id), start: r.start, end: r.end, goal: r.goal, preset: typeof r.preset === 'string' ? r.preset.slice(0, 16) : '', ...(typeof r.note === 'string' && r.note.trim() ? { note: r.note.trim().slice(0, 60) } : {}), ...(typeof r.mood === 'string' && r.mood.trim() ? { mood: r.mood.trim().slice(0, 12) } : {}) }));
   const cleanW = (inc) => (Array.isArray(inc) ? inc : []).filter(w => w && idOk(w.id) && num(w.ts, y2000, now) && num(w.kg, 20, 300)).map(w => ({ id: String(w.id), ts: w.ts, kg: Math.round(w.kg * 10) / 10, src: w.src === 'health' ? 'health' : 'manual' }));
   const cleanM = (inc) => (Array.isArray(inc) ? inc : []).filter(m => m && idOk(m.id) && num(m.ts, y2000, now) && num(m.min, 1, 600)).map(m => ({ id: String(m.id), ts: m.ts, min: Math.round(m.min), breath: BREATHS.some(b => b.id === m.breath) ? m.breath : 'none', kind: m.kind === 'relax' ? 'relax' : 'mind', completed: m.completed !== false }));
   const mergeById = (cur, inc) => { const ids = new Set(cur.map(x => String(x.id))); return cur.concat(inc.filter(x => !ids.has(String(x.id)))); };
@@ -1781,7 +1827,7 @@ function runOnboarding() {
   draw();
 }
 
-if (native) { $('#notifyHint').textContent = '通知はアプリを閉じていても、目標やステージの時刻に届きます。'; }
+if (native) { $('#notifyHint').textContent = '通知はアプリを閉じていても、目標やステージの時刻に届きます。'; document.querySelectorAll('.s-hint').forEach(el => { if (/マナーモード/.test(el.textContent)) el.textContent = '音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。'; }); }
 
 // ---------- ZENTOKI Plus (one-time purchase) ----------
 // Fill in the web payment link / verify endpoint (Stripe + Cloudflare Worker) and the RevenueCat key to turn billing on.
