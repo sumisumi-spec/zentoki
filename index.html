@@ -362,6 +362,25 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .ob-ctl{display:flex;gap:12px;margin-top:38px;width:100%;max-width:340px}
 .ob-ctl button{flex:1;padding:14px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);font-size:13px;letter-spacing:.14em}
 .ob-ctl button.ok{background:#f2f0ea;color:#111;border-color:transparent;font-family:var(--serif);font-size:15px;letter-spacing:.24em}
+/* plus */
+.s-card .lock{position:absolute;top:12px;right:12px;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.5);display:grid;place-items:center;z-index:2}
+.s-card .lock svg{width:12px;height:12px;margin:0;stroke:#fff}
+.preset .lk{display:inline-block;width:9px;height:11px;border:1px solid currentColor;border-radius:2px;margin-left:6px;vertical-align:-1px;position:relative;opacity:.7}
+.preset .lk::before{content:"";position:absolute;left:1px;top:-6px;width:5px;height:6px;border:1px solid currentColor;border-bottom:0;border-radius:4px 4px 0 0}
+.pw-wm{text-align:center;font-family:var(--geo);font-size:18px;letter-spacing:.5em;padding-left:.5em;font-weight:300}
+.pw-wm b{font-weight:400;letter-spacing:.2em;padding-left:.3em}
+.pw-lead{text-align:center;font-family:var(--serif);font-size:13px;color:var(--ink2);margin-top:8px}
+.pw-list{list-style:none;margin:18px 0 0;padding:0}
+.pw-list li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink2);line-height:1.6}
+.pw-list li b{color:var(--ink);font-weight:400;display:block}
+.pw-list li i{width:6px;height:6px;border-radius:50%;background:#fff;margin-top:9px;flex-shrink:0}
+.pw-price{text-align:center;margin-top:18px;font-size:26px;font-weight:200}
+.pw-price small{display:block;font-size:11px;color:var(--ink3);letter-spacing:.14em;margin-top:4px}
+.pw-legal{font-size:10px;color:var(--ink3);line-height:1.7;margin-top:14px;text-align:center}
+.pw-legal a{color:var(--ink2)}
+.plus-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:6px;font-size:14px}
+.plus-row b{font-weight:400;font-size:12px;letter-spacing:.1em;color:var(--ink2)}
+.plus-row b.on{color:#fff}
 /* dialogs */
 dialog{border:0;border-radius:20px;background:#0c0c0e;color:var(--ink);padding:26px 24px;width:min(90vw,360px);box-shadow:0 30px 80px rgba(0,0,0,.7);border:1px solid var(--line)}
 dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(6px)}
@@ -581,6 +600,28 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
   <div class="med-done" id="medDone" hidden><b>おつかれさま</b><p id="medDoneMsg"></p><div class="med-ctl" style="justify-content:center"><button id="medClose">閉じる</button></div></div>
 </div>
 
+<dialog id="plusDialog">
+  <div class="pw-wm">ZENTOKI <b>Plus</b></div>
+  <p class="pw-lead">静けさを、もう少し深く。</p>
+  <ul class="pw-list">
+    <li><i></i><span><b>すべてのサウンド</b>波音・森・焚き火・ドローン・バイノーラル・メロディ</span></li>
+    <li><i></i><span><b>すべての呼吸法</b>ボックス、4-8 / 5-10 / 6-12 / 7-14 のリラックス呼吸</span></li>
+    <li><i></i><span><b>これからの追加機能</b>ガイド音声、ヘルスケア同期、週の振り返り</span></li>
+  </ul>
+  <div class="pw-price" id="plusPrice">¥1,500<small>買い切り · 追加料金なし</small></div>
+  <div class="row" style="margin-top:16px"><button class="ok" id="plusBuy">購入する</button></div>
+  <div class="row" style="margin-top:8px"><button id="plusRestore">購入を復元</button><button id="plusKeyBtn">ライセンスキー</button></div>
+  <p class="pw-legal" id="plusLegal">一度の購入でこの端末とブラウザで有効になります。<a href="tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a> · <a href="privacy.html" target="_blank" rel="noopener">プライバシーと利用について</a></p>
+  <div class="row" style="margin-top:6px"><button id="plusClose">閉じる</button></div>
+</dialog>
+
+<dialog id="keyDialog">
+  <h3>ライセンスキー</h3>
+  <p class="hint" style="margin-top:0">購入完了ページに表示されたキー（ZK- で始まる文字列）を入力してください。</p>
+  <input type="text" id="keyInput" placeholder="ZK-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" style="width:100%;background:var(--fill);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:inherit;font-size:16px;letter-spacing:.1em;text-align:center;outline:none">
+  <div class="row"><button id="keyCancel">キャンセル</button><button class="ok" id="keyOk">有効にする</button></div>
+</dialog>
+
 <dialog id="askDialog">
   <h3 id="askTitle">確認</h3>
   <p id="askMsg" style="font-size:14px;color:var(--ink2);line-height:1.7"></p>
@@ -606,12 +647,13 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 </dialog>
 
 <dialog id="settingsDialog">
-  <div class="about"><div class="wm">ZENTOKI</div><div class="copy">自分を整える時間を、日常に。</div><div class="sub">断食と瞑想を、ひとつのアプリで。</div><div class="ver">VERSION 1.3</div></div>
+  <div class="about"><div class="wm">ZENTOKI</div><div class="copy">自分を整える時間を、日常に。</div><div class="sub">断食と瞑想を、ひとつのアプリで。</div><div class="ver">VERSION 1.4</div></div>
   <h3>設定</h3>
   <label class="toggle"><span>目標達成を通知</span><input type="checkbox" id="notifyToggle"><span class="sw"></span></label>
   <label class="toggle"><span>ステージ到達を通知</span><input type="checkbox" id="stageNotifyToggle"><span class="sw"></span></label>
   <p class="hint" id="notifyHint" style="margin-top:6px">通知はZENTOKIを開いている間（ホーム画面に追加したアプリを含む）に届きます。iPhoneでは「ホーム画面に追加」したアプリからのみ通知できます。</p>
   <label class="toggle"><span>背景の波紋</span><input type="checkbox" id="rippleToggle"><span class="sw"></span></label>
+  <div class="plus-row" id="plusRow" hidden><span>ZENTOKI Plus</span><button id="plusRowBtn"><b id="plusStatus">未購入</b></button></div>
   <h3 style="margin-top:22px">バックアップ</h3>
   <div class="row" style="margin-top:0"><button id="exportBtn">書き出す</button><button id="copyBtn">テキストをコピー</button></div>
   <div class="row"><button id="importBtn">読み込む</button><button class="danger" id="clearBtn">すべて削除</button></div>
@@ -704,6 +746,20 @@ settings.sound = Object.assign({ mode:'rain', on:false, volume:60, chime:true, b
 if (settings.sound.mode === 'off') { settings.sound.mode = 'rain'; settings.sound.on = false; }
 if (settings.sound.mode === 'water') settings.sound.mode = 'stream';
 if (settings.sound.on === undefined) settings.sound.on = false;
+
+// ZENTOKI Plus: config + state (UI handlers live further down)
+const PLUS = {
+  price: '¥1,500',
+  web: { paymentLink: '', verifyUrl: '' },          // e.g. 'https://buy.stripe.com/xxxx', 'https://zentoki-license.<you>.workers.dev'
+  ios: { rcApiKey: '', entitlement: 'plus', product: 'app.zentoki.plus' },
+  sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody'],
+  breaths: ['box', '4-8', '5-10', '6-12', '7-14'],
+};
+PLUS.enabled = !!(PLUS.web.paymentLink || PLUS.ios.rcApiKey) || load('ft.plusDebug', false);
+let plus = load('ft.plus', { active: false, source: null, since: null, grant: null });
+const isPlus = () => !PLUS.enabled || !!plus.active;
+const lockedSound = id => PLUS.enabled && !plus.active && PLUS.sounds.includes(id);
+const lockedBreath = id => PLUS.enabled && !plus.active && PLUS.breaths.includes(id);
 let notified = load('ft.notified', { goal:false, stages:[] });
 let tick = null;
 
@@ -1507,9 +1563,10 @@ const SOUNDS = [
 let sleepTimer = null;
 function armSleep() { clearTimeout(sleepTimer); if (settings.sound.on && settings.sound.sleep > 0) sleepTimer = setTimeout(() => { settings.sound.on = false; persist(); audio.apply(); renderSound(); toast('サウンドを止めました。おやすみなさい'); }, settings.sound.sleep * 60000); }
 function renderSound() {
+  if (lockedSound(settings.sound.mode)) { settings.sound.mode = 'rain'; settings.sound.on = false; save('ft.settings', settings); if (typeof audio !== 'undefined') audio.apply(); }
   const cur = SOUNDS.find(x => x.id === settings.sound.mode) || SOUNDS[0];
-  $('#sGrid').innerHTML = SOUNDS.map(x => `<button class="s-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" aria-label="${x.ja}"><svg viewBox="0 0 24 24">${x.icon}</svg><b>${x.ja}</b><small>${x.en}</small></button>`).join('');
-  $('#sGrid').querySelectorAll('.s-card').forEach(b => b.onclick = () => { const same = settings.sound.mode === b.dataset.id; settings.sound.mode = b.dataset.id; if (!same || !settings.sound.on) settings.sound.on = true; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); ripple.burst(2); });
+  $('#sGrid').innerHTML = SOUNDS.map(x => `<button class="s-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" aria-label="${x.ja}${lockedSound(x.id) ? '（Plus）' : ''}">${lockedSound(x.id) ? '<span class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>' : ''}<svg viewBox="0 0 24 24">${x.icon}</svg><b>${x.ja}</b><small>${x.en}</small></button>`).join('');
+  $('#sGrid').querySelectorAll('.s-card').forEach(b => b.onclick = () => { if (lockedSound(b.dataset.id)) { openPaywall('sound'); return; } const same = settings.sound.mode === b.dataset.id; settings.sound.mode = b.dataset.id; if (!same || !settings.sound.on) settings.sound.on = true; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); ripple.burst(2); });
   $('#sNowJa').textContent = cur.ja; $('#sNowEn').textContent = cur.en;
   $('#sHero').classList.toggle('on', settings.sound.on);
   $('#sPlayIcon').innerHTML = settings.sound.on ? '<rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/>' : '<path d="M8 5v14l11-7z"/>';
@@ -1560,12 +1617,13 @@ function renderMed() {
   $('#medKind').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.k === medPref.kind));
   const list = BREATHS.filter(b => b.kind === medPref.kind);
   if (!list.some(b => b.id === medPref.breath)) medPref.breath = list[0].id;
-  $('#medBreath').innerHTML = list.map(b => `<button class="preset ${b.id === medPref.breath ? 'active' : ''}" data-b="${b.id}">${b.label}${b.sub ? `<small>${b.sub}</small>` : ''}</button>`).join('');
+  if (lockedBreath(medPref.breath)) { const f = list.find(b => !lockedBreath(b.id)); medPref.breath = f ? f.id : 'none'; if (!f) medPref.kind = 'mind'; save('ft.medPref', medPref); }
+  $('#medBreath').innerHTML = list.map(b => `<button class="preset ${b.id === medPref.breath ? 'active' : ''}" data-b="${b.id}">${b.label}${lockedBreath(b.id) ? '<span class="lk" aria-label="Plus"></span>' : ''}${b.sub ? `<small>${b.sub}</small>` : ''}</button>`).join('');
   $('#medHint').textContent = KIND_HINT[medPref.kind];
   { const br = BREATHS.find(b => b.id === medPref.breath); $('#breathDesc').textContent = br && br.phases ? `${br.kind === 'relax' ? 'リラックス' : 'マインドフルネス'} · ${br.label}${br.sub ? '（' + br.sub + '）' : ''}` : 'ガイドなし · ゆっくり、吸って。吐いて。'; }
   $('#medDur').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.min = Number(b.dataset.m); save('ft.medPref', medPref); renderMed(); });
   $('#medKind').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.kind = b.dataset.k; save('ft.medPref', medPref); renderMed(); });
-  $('#medBreath').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.breath = b.dataset.b; save('ft.medPref', medPref); renderMed(); });
+  $('#medBreath').querySelectorAll('button').forEach(b => b.onclick = () => { if (lockedBreath(b.dataset.b)) { openPaywall('breath'); return; } medPref.breath = b.dataset.b; save('ft.medPref', medPref); renderMed(); });
   const wk = Date.now() - 7 * 86400000; const week = meds.filter(m => m.ts >= wk);
   const total = meds.reduce((a, m) => a + m.min, 0);
   $('#medStats').innerHTML = meds.length ? `今週 <b>${week.length}回 · ${week.reduce((a, m) => a + m.min, 0)}分</b> · これまで <b>${meds.length}回 · ${total}分</b>` : '静かに座る時間を、記録に残していきます';
@@ -1725,6 +1783,53 @@ function runOnboarding() {
 
 if (native) { $('#notifyHint').textContent = '通知はアプリを閉じていても、目標やステージの時刻に届きます。'; }
 
+// ---------- ZENTOKI Plus (one-time purchase) ----------
+// Fill in the web payment link / verify endpoint (Stripe + Cloudflare Worker) and the RevenueCat key to turn billing on.
+// While both are empty, everything stays free and no lock is shown.
+function setPlus(active, source, grant) { plus = { active, source: active ? source : null, since: active ? (plus.since || Date.now()) : null, grant: active ? (grant || null) : null }; save('ft.plus', plus); renderSound(); renderMed(); renderPlusUI(); }
+function renderPlusUI() {
+  $('#plusRow').hidden = !PLUS.enabled;
+  const st = $('#plusStatus'); st.textContent = plus.active ? '有効' : '未購入'; st.classList.toggle('on', !!plus.active);
+  $('#plusPrice').firstChild.textContent = PLUS.price;
+  $('#plusBuy').textContent = plus.active ? '購入済み' : '購入する'; $('#plusBuy').disabled = !!plus.active;
+  $('#plusKeyBtn').hidden = !!native; $('#plusLegal').hidden = !!native;
+}
+function openPaywall(reason) { renderPlusUI(); $('#plusDialog').showModal(); }
+// --- web: Stripe payment link + license key verified by a small worker ---
+async function verifyKey(key) {
+  key = String(key || '').trim().toUpperCase();
+  if (!/^ZK(-[A-Z0-9]{4}){3,4}$/.test(key)) { toast('キーの形式が違います'); return false; }
+  if (!PLUS.web.verifyUrl) { toast('この版ではライセンスキーを使えません'); return false; }
+  try {
+    const r = await fetch(PLUS.web.verifyUrl.replace(/\/$/, '') + '/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key }) });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok && j.ok) { setPlus(true, 'web-license', { key, sig: j.sig, at: Date.now() }); toast('ZENTOKI Plus が有効になりました'); return true; }
+    toast(j.error === 'revoked' ? 'このキーは無効になっています' : 'キーが確認できませんでした'); return false;
+  } catch { toast('通信できませんでした。あとでもう一度お試しください'); return false; }
+}
+// --- native: RevenueCat (App Store / Google Play) ---
+const rc = (() => {
+  if (!native || !PLUS.ios.rcApiKey) return null;
+  const P = (window.Capacitor.Plugins || {}).PurchasesPlugin || (window.Capacitor.Plugins || {}).Purchases; if (!P) return null;
+  let ready = false;
+  async function init() { if (ready) return; try { await P.configure({ apiKey: PLUS.ios.rcApiKey }); ready = true; await refresh(); } catch (e) { console.warn('rc init', e); } }
+  function apply(info) { const ent = info && info.customerInfo ? info.customerInfo.entitlements : (info && info.entitlements); const on = !!(ent && ent.active && ent.active[PLUS.ios.entitlement]); if (on !== !!plus.active) setPlus(on, 'ios-iap'); }
+  async function refresh() { try { apply(await P.getCustomerInfo()); } catch {} }
+  async function buy() { await init(); try { const off = await P.getOfferings(); const pkg = off && off.current && (off.current.lifetime || (off.current.availablePackages || [])[0]); if (!pkg) { toast('商品を読み込めませんでした'); return; } const res = await P.purchasePackage({ aPackage: pkg }); apply(res); if (plus.active) toast('ZENTOKI Plus が有効になりました'); } catch (e) { if (!(e && /cancel/i.test(String(e.message || e)))) toast('購入を完了できませんでした'); } }
+  async function restore() { await init(); try { apply(await P.restorePurchases()); toast(plus.active ? '購入を復元しました' : '復元できる購入が見つかりませんでした'); } catch { toast('復元できませんでした'); } }
+  init();
+  return { buy, restore, refresh };
+})();
+$('#plusBuy').onclick = () => { if (plus.active) return; if (rc) rc.buy(); else if (PLUS.web.paymentLink) window.open(PLUS.web.paymentLink, '_blank', 'noopener'); else toast('準備中です'); };
+$('#plusRestore').onclick = () => { if (rc) rc.restore(); else if (plus.grant && plus.grant.key) verifyKey(plus.grant.key); else $('#keyDialog').showModal(); };
+$('#plusKeyBtn').onclick = () => { $('#keyInput').value = ''; $('#keyDialog').showModal(); };
+$('#keyCancel').onclick = () => $('#keyDialog').close();
+$('#keyOk').onclick = async () => { if (await verifyKey($('#keyInput').value)) { $('#keyDialog').close(); $('#plusDialog').close(); } };
+$('#plusClose').onclick = () => $('#plusDialog').close();
+$('#plusRowBtn').onclick = () => { $('#settingsDialog').close(); openPaywall('settings'); };
+// a purchase completed on thanks.html (same origin) lands here via the URL
+{ const u = new URL(location.href); const k = u.searchParams.get('plus_key'); if (k) { history.replaceState(null, '', u.pathname); setTimeout(() => verifyKey(k), 800); } }
+
 // ---------- tabs ----------
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
@@ -1735,6 +1840,7 @@ function showView(id) {
 }
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => showView(t.dataset.view));
 showView(load('ft.tab', 'viewHome'));
+renderPlusUI();
 
 // ---------- init ----------
 renderPresets();

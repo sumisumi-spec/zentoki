@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ご購入ありがとうございます｜ZENTOKI Plus</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:dark}
+body{margin:0;background:#000;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Sans","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:480px;margin:0 auto;padding:60px 24px 80px;text-align:center}
+.wm{font-family:"Jost","Futura",sans-serif;font-weight:300;letter-spacing:.5em;padding-left:.5em;font-size:18px}
+h1{font-weight:200;font-size:24px;letter-spacing:.14em;margin:36px 0 10px}
+p{font-size:14px;line-height:1.9;color:rgba(255,255,255,.7)}
+.key{font-family:"Jost",monospace;font-size:22px;letter-spacing:.14em;padding:18px;border:1px solid rgba(255,255,255,.25);border-radius:14px;margin:26px 0 12px;user-select:all}
+.btn{display:inline-block;margin-top:14px;padding:15px 34px;border-radius:999px;background:#fff;color:#000;text-decoration:none;font-size:14px;letter-spacing:.14em}
+.muted{font-size:12px;color:rgba(255,255,255,.45)}
+</style>
+</head>
+<body><main>
+<div class="wm">ZENTOKI</div>
+<h1 id="h">ご購入ありがとうございます</h1>
+<p id="msg">ライセンスキーを発行しています…</p>
+<div class="key" id="key" hidden></div>
+<p class="muted" id="note" hidden>このキーはメモなどに保存しておいてください。別の端末やブラウザでも、設定 → ZENTOKI Plus → ライセンスキー から有効にできます。</p>
+<a class="btn" id="open" href="./" hidden>ZENTOKIを開く</a>
+<script>
+(async () => {
+  const VERIFY_URL = ''; // same value as PLUS.web.verifyUrl in index.html
+  const sid = new URL(location.href).searchParams.get('session_id');
+  const $ = s => document.querySelector(s);
+  if (!VERIFY_URL || !sid) { $('#msg').textContent = 'このページは購入完了後に自動で開かれます。'; return; }
+  try {
+    const r = await fetch(VERIFY_URL.replace(/\/$/, '') + '/claim', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sid }) });
+    const j = await r.json();
+    if (!r.ok || !j.ok) throw new Error(j.error || 'claim failed');
+    $('#msg').textContent = 'あなたのライセンスキーです。';
+    $('#key').textContent = j.key; $('#key').hidden = false; $('#note').hidden = false;
+    $('#open').href = './?plus_key=' + encodeURIComponent(j.key); $('#open').hidden = false;
+  } catch (e) {
+    $('#h').textContent = 'キーを発行できませんでした';
+    $('#msg').textContent = '時間をおいて再読み込みしてください。解決しない場合は、購入時のメールアドレスと日時を添えてお問い合わせください。';
+  }
+})();
+</script>
+</main></body></html>
