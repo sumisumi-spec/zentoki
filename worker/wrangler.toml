@@ -7,7 +7,8 @@ binding = "KEYS"
 id = "REPLACE_WITH_KV_NAMESPACE_ID"
 
 # Secrets (set with `npx wrangler secret put NAME`):
-#   STRIPE_SECRET_KEY   sk_live_...   (Stripe > Developers > API keys)
-#   LICENSE_SECRET      any long random string (HMAC secret for keys)
+#   LICENSE_SECRET      any long random string (HMAC secret for keys)      ← 必須
+#   ADMIN_TOKEN         any long random string (for /issue, /revoke, /keys)  ← Airペイ運用で必須
+#   STRIPE_SECRET_KEY   sk_live_...   (Stripe を使う場合のみ)
 [vars]
 ALLOWED_ORIGIN = "https://sumisumi-spec.github.io"

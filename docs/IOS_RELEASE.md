@@ -41,8 +41,8 @@
 
 ## 4. 審査提出の前に
 
-- スクリーンショット: 6.9 インチ（iPhone 16 Pro Max など）と 6.5 インチの 2 サイズ。TestFlight で撮ったものを使えます。
-- 説明文・キーワード・サポート URL（`https://sumisumi-spec.github.io/zentoki/`）・プライバシーポリシー URL（`https://sumisumi-spec.github.io/zentoki/privacy.html`）。
+- スクリーンショット: 6.9 インチと 6.5 インチの 2 サイズ × 日英。`docs/store/screenshots/` に生成済み。
+- 説明文・キーワード・審査メモ・URL 類: `docs/APP_STORE.md` にコピペ用の文面をまとめてあります。
 - App Privacy: 「データを収集しない」を選択（アプリはサーバーを持たず、記録は端末内のみ）。
 - 年齢制限: 4+。カテゴリ: Health & Fitness（サブ: Lifestyle）。
 - 審査メモに書くと通りやすい内容: 「医療的助言ではない旨をアプリ内・ポリシーに明記」「通知はローカル通知のみ」「アカウント不要」「オフライン動作」。

@@ -7,7 +7,8 @@
   → 「記録が人質にならない」ことがブランドの信頼につながる。
 - **Plus で解放**: サウンド 6 種（波音・森・焚き火・ドローン・バイノーラル・メロディ）、呼吸法（ボックス / 4-8 / 5-10 / 6-12 / 7-14）、今後のガイド音声・ヘルスケア同期・週の振り返り。
 - **販売経路**
-  - Web 版（GitHub Pages）: Stripe Payment Link → 購入完了ページでライセンスキーを発行 → アプリで自動有効化。
+  - Web 版（GitHub Pages）: **Airペイ オンライン決済の決済リンク** で支払い → 支払完了メールを転送してもらう → 手動でライセンスキーを発行してメールで返信 → キー（またはリンク）でアプリが有効化。
+    （Stripe を使う場合は Payment Link → `thanks.html` で自動発行。どちらも同じ Worker を使う）
   - iOS 版: App 内課金（非消耗型 `app.zentoki.plus`）。RevenueCat 経由で購入・復元。
 - **既定はオフ**: `index.html` の `PLUS.web.paymentLink` / `PLUS.ios.rcApiKey` が空の間は、ロックも購入画面も出ません。
 
@@ -25,7 +26,41 @@
 | iOS 課金 | `rc` オブジェクト | RevenueCat の configure / getOfferings / purchasePackage / restorePurchases / getCustomerInfo。エンタイトルメント `plus` |
 | デバッグ | localStorage `ft.plusDebug = true` | 決済リンク未設定でもロック表示を確認できる |
 
-## Web 版を有効にする手順
+## Web 版を有効にする手順（Airペイ オンライン決済）
+
+Airペイのオンライン決済は「決済リンクを作って送るだけ」の仕組みで、決済後の自動リダイレクトや Webhook・API はありません（購入者はリクルート ID でログインして支払い、完了すると **加盟店と購入者の両方に支払完了メール** が届きます）。
+そのため Web 版は「支払い → 支払完了メールを転送 → キーを返信」の半自動運用にしてあります。1 件あたりの手作業は 1 分ほどです。
+
+1. **Airペイ 管理画面**（https://merchant.online.airpayment.jp/plan/list）
+   1. 「都度決済」のプランを作成: 商品名 `ZENTOKI Plus（買い切り）`、金額 1,500 円。
+   2. 決済リンク（`https://` で始まる URL）をコピー。
+2. **Cloudflare Worker**（無料枠で十分。キーの検証と発行に使う）
+   ```sh
+   cd worker
+   npx wrangler login
+   npx wrangler kv namespace create KEYS      # 表示された id を wrangler.toml に貼る
+   npx wrangler secret put LICENSE_SECRET     # 例: openssl rand -hex 32 の出力
+   npx wrangler secret put ADMIN_TOKEN        # 例: openssl rand -hex 32 の出力（キー発行用。誰にも渡さない）
+   npx wrangler deploy                        # https://zentoki-license.<account>.workers.dev
+   ```
+3. **アプリに設定**（`index.html` の `const PLUS`）
+   - `web.paymentLink`: Airペイの決済リンク
+   - `web.verifyUrl`: Worker の URL
+   - `web.manualKey`: `true`（そのまま）
+   - `web.supportEmail`: キー申請を受け取るメールアドレス（購入画面に表示され、タップでメールが立ち上がる）
+   - `tokushoho.html`: 【 】の箇所（事業者名・責任者・所在地・連絡先）を記入。**これは法律上の必須表示**。
+4. **日々の運用**（支払完了メールが届いたら）
+   ```sh
+   export ZENTOKI_WORKER=https://zentoki-license.<account>.workers.dev
+   export ZENTOKI_ADMIN_TOKEN=（ADMIN_TOKEN）
+   node worker/issue-key.mjs "購入者名 2026-09-11 Airペイ"   # キーと返信メール文が表示される
+   node worker/issue-key.mjs --list                          # 発行済み一覧
+   node worker/issue-key.mjs --revoke ZK-XXXX-XXXX-XXXX-XXXX # 返金時など
+   ```
+   表示された返信文をそのまま購入者に送る。購入者はリンクを開くだけで有効化される（`?plus_key=` を `index.html` が読む）。
+5. main に push すると公開。先に `ft.plusDebug` で購入画面の表示を確認しておく。
+
+### 別案: Stripe で全自動にする場合
 
 1. **Stripe**（https://dashboard.stripe.com）
    1. 商品を作成: 名前 `ZENTOKI Plus`、価格 1,500 円、一回払い。
@@ -64,7 +99,8 @@
 
 ## 収益の目安
 
-- Web: Stripe 手数料 3.6% → 1,500 円あたり約 1,446 円。
+- Web（Airペイ オンライン決済）: 手数料 3.24%、振込手数料 0 円、入金は月 1 回 → 1,500 円あたり約 1,451 円。
+- Web（Stripe）: 手数料 3.6% → 1,500 円あたり約 1,446 円。
 - iOS: App Store 手数料 15%（小規模事業者プログラム申請後） → 約 1,275 円。
 - 100 人が購入で 約 13〜14 万円。運用コストは Worker 0 円、Pages 0 円。
 

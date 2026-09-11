@@ -626,13 +626,14 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
   <div class="pw-price" id="plusPrice">¥1,500<small>買い切り · 追加料金なし</small></div>
   <div class="row" style="margin-top:16px"><button class="ok" id="plusBuy">購入する</button></div>
   <div class="row" style="margin-top:8px"><button id="plusRestore">購入を復元</button><button id="plusKeyBtn">ライセンスキー</button></div>
+  <p class="hint" id="plusManual" hidden style="margin-top:14px">お支払いはAirペイの決済ページで行います。お支払い後に届く「支払完了メール」を <a id="plusMail" href="#">こちら</a> に転送してください。ライセンスキーを返信します（通常24時間以内）。</p>
   <p class="pw-legal" id="plusLegal">一度の購入でこの端末とブラウザで有効になります。<a href="tokushoho.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a> · <a href="privacy.html" target="_blank" rel="noopener">プライバシーと利用について</a></p>
   <div class="row" style="margin-top:6px"><button id="plusClose">閉じる</button></div>
 </dialog>
 
 <dialog id="keyDialog">
   <h3>ライセンスキー</h3>
-  <p class="hint" style="margin-top:0">購入完了ページに表示されたキー（ZK- で始まる文字列）を入力してください。</p>
+  <p class="hint" style="margin-top:0">メールや購入完了ページで受け取ったキー（ZK- で始まる文字列）を入力してください。</p>
   <input type="text" id="keyInput" placeholder="ZK-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" style="width:100%;background:var(--fill);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:inherit;font-size:16px;letter-spacing:.1em;text-align:center;outline:none">
   <div class="row"><button id="keyCancel">キャンセル</button><button class="ok" id="keyOk">有効にする</button></div>
 </dialog>
@@ -794,6 +795,7 @@ const EN = {
   '今週 <b>%1回 · %2分</b> · これまで <b>%3回 · %4分</b>':'This week <b>%1 sessions · %2 min</b> · all time <b>%3 · %4 min</b>','すべての記録 (%1)':'All records (%1)','この瞑想の記録を削除しますか？':'Delete this session?','%1分の瞑想を終えました':'You meditated for %1 minutes','%1分の瞑想を記録しました':'%1 minutes saved',' · ベル%1分':' · bell every %1 min','ガイドなし · ゆっくり、吸って。吐いて。':'No guide · slowly, in and out.',
   '読み込めませんでした。書き出したテキストか確認してください':'Could not read it. Make sure it is exported text','ZENTOKIのバックアップではないようです':'This does not look like a ZENTOKI backup','%1件の記録を読み込みました':'%1 records imported','新しい記録はありませんでした（重複は除外）':'Nothing new to import (duplicates skipped)','書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください':'Exported. If the download does not start, use “Copy as text”','コピーしました。メモなどに貼り付けて保存してください':'Copied. Paste it somewhere safe','コピーできませんでした':'Could not copy','断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。':'Delete all fasting, meditation and weight records? This cannot be undone.','削除しました':'Deleted',
   '通知はアプリを閉じていても、目標やステージの時刻に届きます。':'Notifications arrive at goal and stage times even when the app is closed.','音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。':'Sound plays while the app is open. It stops when the screen locks or you switch apps.',
+  'お支払いはAirペイの決済ページで行います。お支払い後に届く「支払完了メール」を':'Payment is handled on the AirPay checkout page. After paying, forward the payment-confirmation email to','に転送してください。ライセンスキーを返信します（通常24時間以内）。':'and we will reply with your licence key (usually within 24 hours).','こちら':'this address','（Airペイの支払完了メールをこのまま転送してください）':'(Please forward the AirPay payment-confirmation email as is.)','お支払い後、支払完了メールを転送してください。キーをお送りします':'After paying, forward the confirmation email and we will send your key','メールや購入完了ページで受け取ったキー（ZK- で始まる文字列）を入力してください。':'Enter the key you received by email or on the purchase page (it starts with ZK-).',
   'キーの形式が違います':'That key format is not right','この版ではライセンスキーを使えません':'Licence keys are not available in this build','ZENTOKI Plus が有効になりました':'ZENTOKI Plus is active','このキーは無効になっています':'This key has been revoked','キーが確認できませんでした':'Could not verify the key','通信できませんでした。あとでもう一度お試しください':'No connection. Please try again later','商品を読み込めませんでした':'Could not load the product','購入を完了できませんでした':'Purchase could not be completed','購入を復元しました':'Purchase restored','復元できる購入が見つかりませんでした':'No purchase to restore','復元できませんでした':'Could not restore','準備中です':'Coming soon',
   '明日':'Tomorrow','昨日':'Yesterday',
 };
@@ -847,7 +849,9 @@ if (settings.sound.on === undefined) settings.sound.on = false;
 // ZENTOKI Plus: config + state (UI handlers live further down)
 const PLUS = {
   price: '¥1,500',
-  web: { paymentLink: '', verifyUrl: '' },          // e.g. 'https://buy.stripe.com/xxxx', 'https://zentoki-license.<you>.workers.dev'
+  // paymentLink: Airペイ オンライン決済の決済リンク（または Stripe Payment Link）。verifyUrl: worker/ の URL。
+  // manualKey: true = 決済後にキーをメールで送る運用（Airペイ）。false = Stripe → thanks.html で自動発行。
+  web: { paymentLink: '', verifyUrl: '', manualKey: true, supportEmail: '' },
   ios: { rcApiKey: '', entitlement: 'plus', product: 'app.zentoki.plus' },
   sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody'],
   breaths: ['box', '4-8', '5-10', '6-12', '7-14'],
@@ -1926,6 +1930,9 @@ function renderPlusUI() {
   $('#plusPrice').firstChild.textContent = PLUS.price;
   $('#plusBuy').textContent = plus.active ? T('購入済み') : T('購入する'); $('#plusBuy').disabled = !!plus.active;
   $('#plusKeyBtn').hidden = !!native; $('#plusLegal').hidden = !!native;
+  const manual = !native && !!PLUS.web.manualKey; $('#plusManual').hidden = !manual;
+  if (manual) { const m = $('#plusMail'); const subj = encodeURIComponent('ZENTOKI Plus ライセンスキー申請'); const body = encodeURIComponent(T('（Airペイの支払完了メールをこのまま転送してください）') + '\n\n');
+    if (PLUS.web.supportEmail) { m.textContent = PLUS.web.supportEmail; m.href = 'mailto:' + PLUS.web.supportEmail + '?subject=' + subj + '&body=' + body; } else { m.textContent = T('こちら'); m.href = 'tokushoho.html'; m.target = '_blank'; } }
 }
 function openPaywall(reason) { renderPlusUI(); $('#plusDialog').showModal(); }
 // --- web: Stripe payment link + license key verified by a small worker ---
@@ -1953,7 +1960,7 @@ const rc = (() => {
   init();
   return { buy, restore, refresh };
 })();
-$('#plusBuy').onclick = () => { if (plus.active) return; if (rc) rc.buy(); else if (PLUS.web.paymentLink) window.open(PLUS.web.paymentLink, '_blank', 'noopener'); else toast(T('準備中です')); };
+$('#plusBuy').onclick = () => { if (plus.active) return; if (rc) rc.buy(); else if (PLUS.web.paymentLink) { window.open(PLUS.web.paymentLink, '_blank', 'noopener'); if (PLUS.web.manualKey) toast(T('お支払い後、支払完了メールを転送してください。キーをお送りします')); } else toast(T('準備中です')); };
 $('#plusRestore').onclick = () => { if (rc) rc.restore(); else if (plus.grant && plus.grant.key) verifyKey(plus.grant.key); else $('#keyDialog').showModal(); };
 $('#plusKeyBtn').onclick = () => { $('#keyInput').value = ''; $('#keyDialog').showModal(); };
 $('#keyCancel').onclick = () => $('#keyDialog').close();
