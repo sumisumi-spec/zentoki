@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ZENTOKI｜断食・瞑想タイマー</title>
+<meta name="description" content="ZENTOKI（ゼントキ）は、断食タイマーと瞑想タイマーをひとつにしたアプリ。自分を整える時間を、日常に。">
+<meta name="application-name" content="ZENTOKI">
+<meta name="apple-mobile-web-app-title" content="ZENTOKI">
+<meta property="og:title" content="ZENTOKI｜断食・瞑想タイマー">
+<meta property="og:description" content="自分を整える時間を、日常に。断食と瞑想を、ひとつのアプリで。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Shippori+Mincho:wght@400;500&display=swap">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#000;
+  --ink:#f5f5f7; --ink2:rgba(255,255,255,.6); --ink3:rgba(255,255,255,.36); --ink4:rgba(255,255,255,.16);
+  --line:rgba(255,255,255,.1); --fill:rgba(255,255,255,.05);
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif;
+  --geo:"Jost","Futura","Avenir Next","Helvetica Neue",sans-serif;
+  --tabs:calc(78px + env(safe-area-inset-bottom));
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+html,body{margin:0;background:radial-gradient(110% 55% at 50% -12%,#141416 0%,#000 62%) fixed var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased}
+body{padding:env(safe-area-inset-top) 24px var(--tabs);max-width:480px;margin:0 auto;font-feature-settings:"tnum";font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+h1,h2,h3,p{margin:0;font-weight:400}
+#ripples{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;filter:blur(5px)}
+#app{position:relative;z-index:1}
+[hidden]{display:none!important}
+.num{font-family:var(--geo);font-weight:300}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 0 6px}
+header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(--ink);font-weight:300}
+.icon-btn{position:relative;width:38px;height:38px;display:grid;place-items:center;color:var(--ink2);border-radius:50%;transition:color .2s;margin-right:-8px}
+.icon-btn:hover{color:var(--ink)}
+.icon-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+
+/* views */
+.view{display:none;animation:vin .55s var(--ease)}
+.view.active{display:block}
+@keyframes vin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.blk{padding:22px 0 34px}
+.blk+.blk{border-top:1px solid var(--line)}
+.h{font-size:30px;font-weight:200;letter-spacing:.4em;padding-left:.4em;text-align:center;line-height:1.2}
+.h.l{text-align:left;padding-left:0;letter-spacing:.22em;font-size:34px}
+.rule{width:22px;height:1px;background:rgba(255,255,255,.55);margin:14px auto 12px;transform-origin:center;animation:rule .9s .1s var(--ease) both}
+.rule.l{margin:12px 0 10px;transform-origin:left}
+@keyframes rule{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.lead{font-size:13px;color:var(--ink2);letter-spacing:.16em;text-align:center}
+.lead.l{text-align:left;letter-spacing:.14em}
+.label{font-size:13px;letter-spacing:.14em;color:var(--ink2);margin:26px 0 12px}
+
+/* fasting ring */
+.ring{position:relative;width:min(272px,72vw);aspect-ratio:1;margin:26px auto 0}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.ring circle{fill:none;stroke-linecap:round}
+.ring .track{stroke:var(--ink4);stroke-width:2.5}
+.ring .bar{stroke:#fff;stroke-width:3;transition:stroke-dashoffset .8s var(--ease);filter:drop-shadow(0 0 6px rgba(255,255,255,.55))}
+.ring .tip{fill:#fff;stroke:#000;stroke-width:2;filter:drop-shadow(0 0 7px #fff);transition:cx .8s var(--ease),cy .8s var(--ease);animation:tip 2.6s ease-in-out infinite}
+@keyframes tip{50%{filter:drop-shadow(0 0 12px #fff)}}
+.ring .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-shadow:0 2px 16px rgba(0,0,0,.9)}
+.ring .lbl{font-size:14px;letter-spacing:.2em;color:var(--ink2);margin-bottom:6px}
+.ring .time{font-size:clamp(40px,11vw,52px);font-weight:200;letter-spacing:.02em;line-height:1}
+.ring .hr{width:min(150px,40vw);height:1px;background:rgba(255,255,255,.35);margin:16px 0 12px}
+.ring .sub{font-size:14px;color:var(--ink2);letter-spacing:.1em}
+.remain{text-align:center;font-size:26px;font-weight:200;letter-spacing:.06em;margin-top:26px;min-height:32px}
+.remain small{font-size:15px;color:var(--ink2);margin-right:10px;letter-spacing:.14em}
+.times{display:flex;justify-content:center;gap:28px;margin-top:12px;font-size:12px;color:var(--ink3);letter-spacing:.08em}
+.times b{font-weight:300;color:var(--ink2);margin-left:6px}
+.times button{color:var(--ink3);border-bottom:1px solid var(--ink4);margin-left:8px;font-size:11px}
+.pill-lg{display:block;width:100%;margin-top:18px;padding:16px;border-radius:999px;border:1px solid rgba(255,255,255,.85);color:#fff;font-size:15px;letter-spacing:.2em;padding-left:calc(16px + .2em);transition:.25s var(--ease);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.pill-lg:hover{background:#fff;color:#000}
+.pill-lg:active{transform:scale(.985)}
+.eating{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13px;color:var(--ink2)}
+.eating b{font-weight:200;font-size:22px;color:var(--ink)}
+.eating small{display:block;color:var(--ink3);font-size:11px;margin-top:4px}
+
+/* stage line */
+.stage-line{margin-top:20px;border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stage-line summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.stage-line summary::-webkit-details-marker{display:none}
+.stage-now b{display:block;font-size:16px;font-weight:300;letter-spacing:.06em}
+.stage-now p{font-size:12px;color:var(--ink2);line-height:1.7;margin-top:6px}
+.stage-now .h{font-size:12px;color:var(--ink3);letter-spacing:.1em;padding:0;text-align:right}
+.stage-next{margin-top:10px;font-size:11px;color:var(--ink3);display:flex;justify-content:space-between}
+.stage-next b{font-weight:400;color:var(--ink2)}
+.stages{margin-top:14px;border-top:1px solid var(--line)}
+.stage{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink3)}
+.stage:last-child{border-bottom:0}
+.stage .h{font-size:12px;letter-spacing:.06em;padding:2px 0 0;text-align:left}
+.stage b{display:block;font-size:14px;font-weight:400}
+.stage p{font-size:12px;line-height:1.6;margin-top:4px}
+.stage.past{color:var(--ink2)}
+.stage.now{color:var(--ink)}
+
+/* presets */
+.presets{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -24px;padding:2px 24px 6px;scroll-snap-type:x proximity}
+.presets::-webkit-scrollbar{display:none}
+.preset{flex:0 0 auto;scroll-snap-align:start;min-width:84px;padding:14px 18px;border-radius:999px;border:1px solid rgba(255,255,255,.55);color:var(--ink);font-size:16px;letter-spacing:.04em;transition:all .25s var(--ease);white-space:nowrap;text-align:center;font-weight:300}
+.preset small{display:block;color:var(--ink3);font-size:10px;letter-spacing:.1em;margin-top:2px}
+.preset.active{background:#fff;color:#000;border-color:#fff;box-shadow:0 0 18px rgba(255,255,255,.25)}
+.preset.active small{color:rgba(0,0,0,.5)}
+.preset:disabled:not(.active){opacity:.35;cursor:default}
+.custom-row{display:flex;align-items:baseline;gap:10px;margin-top:16px;color:var(--ink2);font-size:13px}
+.custom-row input{width:80px;background:transparent;border:0;border-bottom:1px solid var(--ink4);color:var(--ink);padding:6px 0;font:inherit;font-size:22px;font-weight:200;text-align:center;outline:none;border-radius:0}
+.custom-row input:focus{border-color:#fff}
+
+/* meditation block */
+.med-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:22px -24px 0;padding:2px 24px 6px}
+.med-row::-webkit-scrollbar{display:none}
+.bcard{width:100%;margin-top:14px;display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;padding:16px 18px 16px 14px;border:1px solid var(--line);border-radius:14px;text-align:left;transition:border-color .25s}
+.bcard:hover{border-color:rgba(255,255,255,.35)}
+.bcard .bring{position:relative;width:76px;height:76px;display:grid;place-items:center}
+.bcard .bring i{width:64px;height:64px;border-radius:50%;border:1px solid rgba(255,255,255,.75);box-shadow:0 0 14px rgba(255,255,255,.25);animation:breathe 8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.78);opacity:.7}50%{transform:scale(1);opacity:1}}
+.bcard b{display:block;font-size:17px;font-weight:300;letter-spacing:.1em}
+.bcard small{display:block;font-size:12px;color:var(--ink3);letter-spacing:.1em;margin-top:6px}
+.bcard .chev{width:8px;height:8px;border-right:1px solid var(--ink3);border-bottom:1px solid var(--ink3);transform:rotate(45deg);transition:transform .3s}
+.bcard[aria-expanded="true"] .chev{transform:rotate(-135deg)}
+#breathPanel{padding:6px 0 4px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{flex:1;padding:11px 0;border-radius:999px;border:1px solid var(--line);color:var(--ink2);font-size:13px;letter-spacing:.06em;transition:.2s}
+.seg button.active{background:#fff;color:#000;border-color:#fff}
+.seg button small{display:block;font-size:10px;color:var(--ink3);margin-top:2px;letter-spacing:.08em}
+.seg button.active small{color:rgba(0,0,0,.5)}
+.med-kind{margin:14px 0 10px}
+.med-hint{font-size:12px;color:var(--ink3);line-height:1.7;margin-top:12px}
+.med-stats{font-size:12px;color:var(--ink3);letter-spacing:.06em;margin-top:16px;text-align:center}
+.med-stats b{font-weight:400;color:var(--ink2)}
+
+/* sound view */
+.s-head{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;padding-top:22px}
+.s-note{font-size:12px;color:var(--ink2);letter-spacing:.16em;line-height:1.8;text-align:right;padding-top:14px}
+.s-note i{display:block;width:36px;height:1px;background:rgba(255,255,255,.45);margin:10px 0 0 auto}
+.s-hero{position:relative;display:flex;flex-direction:column;align-items:center;padding:6px 0 10px}
+.s-ring{position:relative;width:min(220px,58vw);aspect-ratio:1;margin:0 auto;animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+.s-orb{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(255,255,255,.9);box-shadow:0 0 18px rgba(255,255,255,.35),inset 0 0 30px rgba(255,255,255,.05);transition:box-shadow .8s}
+.s-hero.on .s-orb{animation:orb 5s ease-in-out infinite}
+@keyframes orb{50%{box-shadow:0 0 34px rgba(255,255,255,.6),inset 0 0 40px rgba(255,255,255,.1)}}
+.s-mirror{width:min(260px,70vw);height:60px;margin-top:-30px;background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.14),transparent 70%);filter:blur(6px);pointer-events:none}
+.s-now{text-align:center;margin-top:8px}
+.s-now b{display:block;font-size:26px;font-weight:200;letter-spacing:.3em;padding-left:.3em}
+.s-now small{display:block;font-family:var(--geo);font-size:12px;letter-spacing:.3em;color:var(--ink2);margin-top:6px}
+.s-play{width:66px;height:66px;border-radius:50%;border:1.5px solid rgba(255,255,255,.85);display:grid;place-items:center;margin-top:18px;transition:.25s var(--ease)}
+.s-play:hover{background:#fff;color:#000}
+.s-play svg{width:22px;height:22px;fill:currentColor}
+.s-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+.s-card{position:relative;aspect-ratio:1/0.74;border-radius:14px;border:1px solid rgba(255,255,255,.18);overflow:hidden;text-align:left;padding:16px;display:flex;flex-direction:column;justify-content:flex-end;transition:border-color .3s,box-shadow .3s;background:#0a0a0c}
+.s-card::before{content:"";position:absolute;inset:0;opacity:.9}
+.s-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.7))}
+.s-card>*{position:relative;z-index:1}
+.s-card.active{border-color:#fff;box-shadow:0 0 22px rgba(255,255,255,.18)}
+.s-card svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
+.s-card b{font-size:22px;font-weight:300;letter-spacing:.14em}
+.s-card small{font-family:var(--geo);font-size:11px;letter-spacing:.3em;color:var(--ink2);margin-top:6px}
+/* card textures (monochrome, animated) */
+.s-card.rain::before{background:repeating-linear-gradient(100deg,transparent 0 9px,rgba(255,255,255,.07) 9px 10px),radial-gradient(circle at 30% 30%,rgba(255,255,255,.08),transparent 40%);background-size:100% 100%,100% 100%;animation:rain 9s linear infinite}
+@keyframes rain{to{background-position:-40px 240px,0 0}}
+.s-card.ocean::before{background:repeating-linear-gradient(180deg,rgba(255,255,255,.08) 0 1px,transparent 1px 8px);transform:skewY(-6deg) scale(1.3);animation:ocean 14s ease-in-out infinite alternate}
+@keyframes ocean{to{background-position:0 18px;transform:skewY(-4deg) scale(1.3)}}
+.s-card.forest::before{background:repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 3px,transparent 3px 15px),radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.14),transparent 60%);animation:fog 16s ease-in-out infinite alternate}
+@keyframes fog{to{background-position:0 0,40px -20px}}
+.s-card.fire::before{background:radial-gradient(ellipse at 50% 100%,rgba(255,255,255,.28),rgba(255,255,255,.06) 40%,transparent 65%);animation:fire .9s ease-in-out infinite alternate}
+@keyframes fire{from{opacity:.75;transform:scaleY(1)}to{opacity:1;transform:scaleY(1.06)}}
+.s-card.stream::before{background:repeating-linear-gradient(150deg,transparent 0 12px,rgba(255,255,255,.06) 12px 13px);animation:stream 12s linear infinite}
+@keyframes stream{to{background-position:120px 0}}
+.s-card.drone::before{background:repeating-radial-gradient(circle at 50% 120%,rgba(255,255,255,.08) 0 1px,transparent 1px 18px);animation:drone 20s linear infinite}
+@keyframes drone{to{background-position:0 -36px}}
+.s-card.binaural::before{background:radial-gradient(circle at 30% 55%,transparent 38px,rgba(255,255,255,.14) 39px,transparent 40px),radial-gradient(circle at 70% 55%,transparent 38px,rgba(255,255,255,.14) 39px,transparent 40px);animation:bin 6s ease-in-out infinite alternate}
+@keyframes bin{to{background-position:6px 0,-6px 0}}
+.s-card.melody::before{background:radial-gradient(circle at 20% 40%,rgba(255,255,255,.35) 0 2px,transparent 3px),radial-gradient(circle at 45% 70%,rgba(255,255,255,.25) 0 2px,transparent 3px),radial-gradient(circle at 70% 30%,rgba(255,255,255,.3) 0 2px,transparent 3px),radial-gradient(circle at 85% 60%,rgba(255,255,255,.2) 0 2px,transparent 3px);animation:melody 10s ease-in-out infinite alternate}
+@keyframes melody{to{background-position:0 -10px,0 8px,0 -6px,0 10px}}
+#beatBox{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:14px}
+#beatSeg button{padding:10px 0;font-size:12px}
+#beginSeg button{flex:1 1 30%;padding:10px 0;font-size:13px}
+.s-vol{display:flex;align-items:center;gap:16px;margin-top:30px}
+.s-vol svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.s-vol input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:1px;background:rgba(255,255,255,.35);outline:none}
+.s-vol input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:0;box-shadow:0 0 10px rgba(255,255,255,.5)}
+.s-vol input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:0}
+.s-vol span{font-family:var(--geo);font-size:16px;min-width:44px;text-align:right}
+.s-row{width:100%;display:grid;grid-template-columns:auto 1fr auto auto;gap:16px;align-items:center;padding:20px 0;margin-top:14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:18px;letter-spacing:.12em;font-weight:300;text-align:left}
+.s-row svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.s-row b{font-weight:300;font-size:20px;letter-spacing:.06em}
+.s-row .chev{width:9px;height:9px;border-right:1px solid var(--ink2);border-bottom:1px solid var(--ink2);transform:rotate(-45deg)}
+.s-hint{font-size:11px;color:var(--ink3);line-height:1.7;margin-top:14px}
+
+/* toggles */
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);font-size:15px;letter-spacing:.06em;cursor:pointer}
+.toggle:last-of-type{border-bottom:0}
+.sw{position:relative;width:44px;height:26px;border-radius:999px;background:var(--ink4);transition:.25s;flex-shrink:0}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.25s var(--ease)}
+.toggle input{position:absolute;opacity:0;width:0;height:0}
+.toggle input:checked+.sw{background:#fff}
+.toggle input:checked+.sw::after{transform:translateX(18px);background:#000}
+
+/* records view */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:20px}
+.stat{padding:0 4px}
+.stat+.stat{border-left:1px solid var(--line);padding-left:14px}
+.stat b{display:block;font-size:24px;font-weight:200;letter-spacing:-.01em}
+.stat span{font-size:11px;color:var(--ink3);letter-spacing:.08em}
+.stats+.stats{margin-top:16px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin:28px 0 6px}
+.cal-head b{font-weight:300;font-size:18px;letter-spacing:.06em}
+.cal-head button{width:36px;height:36px;display:grid;place-items:center;color:var(--ink3);border-radius:50%}
+.cal-head button:hover{color:#fff}
+.cal-head button svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.cal-sum{font-size:12px;color:var(--ink3);letter-spacing:.04em;margin-bottom:16px}
+.cal-sum b{font-weight:400;color:var(--ink2)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 0}
+.cal .dow{text-align:center;font-size:10px;color:var(--ink4);letter-spacing:.1em;padding-bottom:8px}
+.cal .d{position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:12px;font-size:13px;color:var(--ink2);transition:background .2s}
+.cal .d.out,.cal .d.future{color:var(--ink4)}
+.cal .d.today{color:#fff}
+.cal .d.today::before{content:"";position:absolute;inset:4px;border:1px solid rgba(255,255,255,.3);border-radius:10px}
+.cal .d.sel{background:#fff;color:#000}
+.cal .d.sel .dot{background:#000!important;box-shadow:none}
+.cal .dot{width:6px;height:6px;border-radius:50%;background:#fff;opacity:0}
+.cal .d.has .dot{opacity:1}
+.cal .d.goal .dot{box-shadow:0 0 0 2px #000,0 0 0 3px rgba(255,255,255,.6)}
+.cal .d .dot2{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:10px;height:1.5px;background:rgba(255,255,255,.55);opacity:0}
+.cal .d.med .dot2{opacity:1}
+.cal .d.sel .dot2{background:#000}
+.cal-day{margin-top:18px;border-top:1px solid var(--line);padding-top:14px;font-size:13px;color:var(--ink2);min-height:44px}
+.cal-day .t{font-size:11px;letter-spacing:.14em;color:var(--ink3);margin-bottom:8px;display:flex;justify-content:space-between}
+.cal-day ul{list-style:none;margin:0;padding:0}
+.cal-day li{display:flex;justify-content:space-between;padding:6px 0}
+.cal-day li b{font-weight:300;color:var(--ink)}
+.cal-legend{display:flex;gap:18px;margin-top:14px;font-size:10px;color:var(--ink4);letter-spacing:.08em}
+.cal-legend i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#fff;margin-right:6px;vertical-align:1px}
+.cal-legend i.g{box-shadow:0 0 0 2px #000,0 0 0 3px rgba(255,255,255,.6)}
+.cal-legend i.m{width:10px;height:1.5px;border-radius:0;vertical-align:2px}
+.history{list-style:none;margin:8px 0 0;padding:0}
+.history li{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.history .dur{font-size:20px;font-weight:200}
+.history .dur.ok{color:#fff}
+.history .dur:not(.ok){color:var(--ink2)}
+.history .info{min-width:0;font-size:12px;color:var(--ink3);line-height:1.6}
+.history .info b{display:block;font-weight:400;color:var(--ink2);font-size:13px}
+.history .del,.w-list .del{color:var(--ink4);width:32px;height:32px;display:grid;place-items:center;font-size:16px;transition:color .2s}
+.history .del:hover,.w-list .del:hover{color:var(--ink)}
+.empty{color:var(--ink3);font-size:12px;letter-spacing:.06em;padding:8px 0 0}
+.w-more{margin-top:12px;font-size:11px;letter-spacing:.2em;color:var(--ink3)}
+.w-list{list-style:none;margin:14px 0 0;padding:0}
+.w-list li{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink3)}
+.w-list li b{font-weight:300;font-size:16px;color:var(--ink)}
+.w-list li .src{font-size:10px;letter-spacing:.1em;color:var(--ink4);margin-left:8px}
+/* weight */
+.w-hero{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:18px}
+.w-hero .v{font-size:40px;font-weight:200;letter-spacing:-.01em;line-height:1}
+.w-hero .v small{font-size:14px;color:var(--ink3);margin-left:6px;letter-spacing:.06em}
+.w-hero .delta{font-size:13px;color:var(--ink2);text-align:right;line-height:1.6}
+.w-hero .delta b{font-weight:400;color:var(--ink)}
+.w-bar{position:relative;height:1px;background:var(--ink4);margin:22px 0 10px}
+.w-bar i{position:absolute;left:0;top:0;height:1px;background:#fff;transition:width .6s var(--ease)}
+.w-bar i::after{content:"";position:absolute;right:-3px;top:-3px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.6)}
+.w-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);letter-spacing:.06em}
+.w-meta button{color:var(--ink3);border-bottom:1px solid var(--ink4)}
+.w-actions{display:flex;gap:10px;margin-top:20px}
+.ghost{flex:1;padding:12px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);font-size:13px;letter-spacing:.08em;transition:.2s;text-align:center}
+.ghost:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.w-chart{position:relative;margin-top:26px;height:150px}
+.w-chart svg{width:100%;height:100%;overflow:visible}
+.w-chart .grid{stroke:var(--line);stroke-width:1}
+.w-chart .goal{stroke:rgba(255,255,255,.35);stroke-width:1;stroke-dasharray:3 4}
+.w-chart .line{fill:none;stroke:#fff;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.w-chart .area{fill:url(#wfade)}
+.w-chart .pt{fill:#000;stroke:#fff;stroke-width:1.5}
+.w-chart .pt.last{fill:#fff}
+.w-chart .hit{fill:transparent}
+.w-chart text{fill:var(--ink3);font-size:10px;letter-spacing:.06em}
+.w-chart .tip{position:absolute;transform:translate(-50%,-100%);background:#fff;color:#000;font-size:11px;padding:4px 8px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;margin-top:-10px}
+.w-chart .tip.show{opacity:1}
+.w-empty{height:150px;display:grid;place-items:center;color:var(--ink3);font-size:12px;letter-spacing:.06em;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:26px}
+.bmi{display:flex;justify-content:space-between;align-items:baseline;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink3)}
+.bmi b{font-weight:300;font-size:18px;color:var(--ink);margin-right:8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:4;height:var(--tabs);padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.92) 30%);display:flex;justify-content:center}
+.tabs .in{width:100%;max-width:480px;display:grid;grid-template-columns:repeat(3,1fr);padding:0 24px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 0 10px;color:var(--ink3);font-size:13px;letter-spacing:.12em;position:relative;transition:color .25s}
+.tab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.tab.active{color:#fff}
+.tab::after{content:"";position:absolute;bottom:2px;width:36px;height:1.5px;background:#fff;transform:scaleX(0);transition:transform .35s var(--ease)}
+.tab.active::after{transform:scaleX(1)}
+.tab .bars{display:flex;gap:3px;align-items:flex-end;height:26px}
+.tab .bars i{width:2px;background:currentColor;border-radius:1px;transform-origin:bottom}
+.tab.active .bars i{animation:eq 1.6s ease-in-out infinite}
+.tab .bars i:nth-child(2){animation-delay:.2s}.tab .bars i:nth-child(3){animation-delay:.4s}.tab .bars i:nth-child(4){animation-delay:.1s}.tab .bars i:nth-child(5){animation-delay:.3s}
+@keyframes eq{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+
+/* meditation overlay */
+#medOverlay{position:fixed;inset:0;z-index:6;background:rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;transition:opacity .8s var(--ease)}
+#medOverlay.show{opacity:1}
+.breath{position:relative;width:min(240px,64vw);aspect-ratio:1;display:grid;place-items:center}
+.breath .o{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.22)}
+.breath .c{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18) 0%,rgba(255,255,255,.06) 55%,transparent 72%);transform:scale(.55);will-change:transform}
+.breath .r{position:absolute;inset:0;border-radius:50%;border:1.5px solid #fff;box-shadow:0 0 18px rgba(255,255,255,.35);transform:scale(.55);will-change:transform}
+.breath .txt{position:relative;text-align:center;text-shadow:0 2px 14px rgba(0,0,0,.9)}
+.breath .phase{font-size:15px;letter-spacing:.3em;color:#fff;padding-left:.3em;min-height:22px}
+.breath .cnt{font-size:12px;color:var(--ink3);margin-top:6px;letter-spacing:.1em;min-height:16px}
+.med-time{margin-top:40px;font-size:40px;font-weight:200;letter-spacing:.02em;text-shadow:0 2px 14px rgba(0,0,0,.9)}
+.med-sub{font-size:11px;letter-spacing:.22em;color:var(--ink3);margin-top:8px}
+.med-ctl{display:flex;gap:12px;margin-top:40px}
+.med-ctl button{padding:12px 26px;border-radius:999px;border:1px solid rgba(255,255,255,.3);color:var(--ink2);font-size:13px;letter-spacing:.12em;transition:.2s}
+.med-ctl button:hover{border-color:#fff;color:#fff}
+.med-done{text-align:center}
+.med-done b{display:block;font-size:22px;font-weight:200;letter-spacing:.2em;margin-bottom:10px}
+.med-done p{font-size:13px;color:var(--ink2)}
+
+/* title screen */
+#title{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:opacity 1s var(--ease);color:#fff}
+#title.out{opacity:0;pointer-events:none}
+#title .lang{position:absolute;top:calc(22px + env(safe-area-inset-top));right:26px;font-family:var(--geo);font-size:13px;letter-spacing:.24em;color:var(--ink3);z-index:2}
+#title .lang b{font-weight:300;color:var(--ink2);transition:color .3s}
+#title .lang b.on{color:#fff}
+.t-ring{position:relative;width:min(250px,64vw);aspect-ratio:1;display:grid;place-items:center;margin-top:2vh}
+.t-ring svg{position:absolute;inset:-12%;width:124%;height:124%;overflow:visible;pointer-events:none}
+.t-ring .glow{filter:blur(6px);opacity:.9}
+.t-ring .glint{filter:blur(10px)}
+.t-wm{font-family:var(--geo);font-weight:200;font-size:clamp(30px,9vw,38px);letter-spacing:.34em;padding-left:.34em;line-height:1;position:relative;text-align:center}
+.t-tag{font-family:var(--serif);font-size:15px;letter-spacing:.3em;padding-left:.3em;color:var(--ink2);margin-top:14px;position:relative;text-align:center}
+.t-copy{font-family:var(--serif);font-size:clamp(22px,6.2vw,26px);letter-spacing:.2em;line-height:1.75;text-align:center;margin-top:7vh;font-weight:400;text-wrap:balance}
+.t-start{margin-top:auto;margin-bottom:26px;min-width:min(260px,70vw);padding:17px 40px;border-radius:999px;background:#f2f0ea;color:#111;font-family:var(--serif);font-size:16px;letter-spacing:.3em;padding-left:calc(40px + .3em);transition:.25s var(--ease);opacity:0;transform:translateY(8px);animation:tin 1.2s .9s var(--ease) forwards}
+.t-start:active{transform:scale(.98)}
+.t-foot{font-family:var(--serif);font-size:12px;letter-spacing:.18em;color:var(--ink3);margin-bottom:calc(14px + env(safe-area-inset-bottom));opacity:0;animation:tin 1.2s 1.2s var(--ease) forwards}
+.t-ring,.t-copy{opacity:0;animation:tin 1.4s var(--ease) forwards}
+.t-copy{animation-delay:.5s}
+@keyframes tin{to{opacity:1;transform:none}}
+#title.quick .t-start,#title.quick .t-foot{display:none}
+
+/* onboarding */
+#onboard{position:fixed;inset:0;z-index:19;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px calc(28px + env(safe-area-inset-bottom));color:#fff;transition:opacity .8s var(--ease)}
+#onboard.out{opacity:0;pointer-events:none}
+.ob-card{text-align:center;max-width:340px;animation:vin .6s var(--ease)}
+.ob-card .ob-ico{width:96px;height:96px;margin:0 auto 34px;border-radius:50%;border:1px solid rgba(255,255,255,.55);box-shadow:0 0 20px rgba(255,255,255,.2);display:grid;place-items:center}
+.ob-card .ob-ico svg{width:40px;height:40px;fill:none;stroke:#fff;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+.ob-card h2{font-size:26px;font-weight:200;letter-spacing:.34em;padding-left:.34em;margin-bottom:18px}
+.ob-card p{font-family:var(--serif);font-size:15px;line-height:2;color:var(--ink2);letter-spacing:.08em}
+.ob-dots{display:flex;gap:10px;margin-top:40px}
+.ob-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink4);transition:.3s}
+.ob-dots i.on{background:#fff}
+.ob-ctl{display:flex;gap:12px;margin-top:38px;width:100%;max-width:340px}
+.ob-ctl button{flex:1;padding:14px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);font-size:13px;letter-spacing:.14em}
+.ob-ctl button.ok{background:#f2f0ea;color:#111;border-color:transparent;font-family:var(--serif);font-size:15px;letter-spacing:.24em}
+/* dialogs */
+dialog{border:0;border-radius:20px;background:#0c0c0e;color:var(--ink);padding:26px 24px;width:min(90vw,360px);box-shadow:0 30px 80px rgba(0,0,0,.7);border:1px solid var(--line)}
+dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(6px)}
+dialog h3{font-size:12px;letter-spacing:.22em;color:var(--ink3);text-transform:uppercase;margin-bottom:18px}
+dialog label{display:block;font-size:12px;color:var(--ink2);margin:14px 0 6px}
+dialog label.toggle{margin:0;font-size:14px}
+dialog input[type=datetime-local],dialog input[type=number],dialog input[type=date],dialog input[type=time]{width:100%;background:var(--fill);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:inherit;font-size:16px;color-scheme:dark;outline:none}
+dialog input:focus{border-color:rgba(255,255,255,.4)}
+dialog .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog .big{font-size:32px;font-weight:200;text-align:center}
+dialog .hint{font-size:11px;color:var(--ink3);line-height:1.7;margin-top:12px}
+dialog .row{display:flex;gap:10px;margin-top:22px}
+dialog .row button{flex:1;padding:13px;border-radius:999px;border:1px solid var(--line);font-size:13px;letter-spacing:.08em;color:var(--ink2);transition:.2s}
+dialog .row button.ok{background:#fff;color:#000;border-color:#fff}
+dialog .row button.danger{color:rgba(255,120,120,.9)}
+.about{text-align:center;padding:6px 0 18px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.about .wm{font-family:var(--geo);font-size:16px;letter-spacing:.5em;padding-left:.5em;color:#fff;font-weight:300}
+.about .copy{font-family:var(--serif);font-size:13px;color:var(--ink2);margin-top:10px}
+.about .sub{font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.04em}
+.about .ver{font-family:var(--geo);font-size:10px;color:var(--ink4);margin-top:10px;letter-spacing:.14em}
+.note{font-size:11px;color:var(--ink3);line-height:1.7;margin-top:18px}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + 12px);transform:translateX(-50%) translateY(16px);background:#fff;color:#000;padding:11px 18px;border-radius:999px;font-size:13px;opacity:0;transition:.3s var(--ease);pointer-events:none;z-index:9;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.t-ring,.t-copy,.t-start,.t-foot{opacity:1;transform:none}.rule{transform:none}}
+</style>
+</head>
+<body>
+<div id="title" hidden>
+  <button class="lang" id="langBtn" aria-label="Language"><b data-l="ja">JP</b> / <b data-l="en">EN</b></button>
+  <div class="t-ring">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity=".12"/></linearGradient></defs>
+      <g transform="rotate(-62 50 50)">
+        <circle class="glow" cx="50" cy="50" r="40" fill="none" stroke="url(#tg)" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="238 14"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="url(#tg)" stroke-width=".55" stroke-linecap="round" stroke-dasharray="238 14"/>
+        <circle class="glint" cx="50" cy="50" r="40" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="26 226"/>
+      </g>
+    </svg>
+    <div><div class="t-wm">ZENTOKI</div><div class="t-tag" data-i="tag">禅と、時。</div></div>
+  </div>
+  <div class="t-copy" data-i="copy">自分を整える時間を、<br>日常に。</div>
+  <button class="t-start" id="startApp" data-i="start">はじめる</button>
+  <div class="t-foot" data-i="foot">断食と瞑想を、ひとつに。</div>
+</div>
+<canvas id="ripples" aria-hidden="true"></canvas>
+<main id="app">
+<header>
+  <h1>ZENTOKI</h1>
+  <button class="icon-btn" id="settingsBtn" aria-label="設定">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+</header>
+
+<!-- ===== HOME ===== -->
+<div class="view active" id="viewHome">
+  <section class="blk" id="fastSec">
+    <h2 class="h">断食</h2><div class="rule"></div><p class="lead">食を整え、今のわたしに還る。</p>
+    <div class="ring" id="homeRing">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="track" cx="100" cy="100" r="92"></circle>
+        <circle class="bar" id="ringBar" cx="100" cy="100" r="92"></circle>
+        <circle class="tip" id="ringTip" cx="100" cy="8" r="6.5" hidden></circle>
+      </svg>
+      <div class="center">
+        <div class="lbl" id="ringLabel">目標</div>
+        <div class="time num" id="ringTime">16h</div>
+        <div class="hr"></div>
+        <div class="sub" id="ringSub"></div>
+      </div>
+    </div>
+    <div class="remain" id="remainBig"></div>
+    <div class="times" id="timesBox" hidden>
+      <div>開始<b id="startedAt"></b><button id="editStart">変更</button></div>
+      <div>目標<b id="goalAt"></b></div>
+    </div>
+    <button class="pill-lg" id="mainBtn">断食をはじめる</button>
+    <div class="eating" id="eatingCard" hidden>
+      <div>食事の時間<small>次の断食の目安 <span id="eatingUntil"></span></small></div>
+      <b class="num" id="eatingRemain"></b>
+    </div>
+    <details class="stage-line" id="stageBox">
+      <summary><div class="stage-now" id="stageNow"></div></summary>
+      <div class="stage-next" id="stageNext"></div>
+      <div class="stages" id="stages"></div>
+    </details>
+    <div class="label">断食プラン</div>
+    <div class="presets" id="presets"></div>
+    <div class="custom-row" id="customRow" hidden>
+      <input type="number" id="customHours" min="1" max="120" step="1" inputmode="numeric"><span>時間の断食</span>
+    </div>
+  </section>
+
+  <section class="blk" id="medSec">
+    <h2 class="h">瞑想</h2><div class="rule"></div><p class="lead">心に、余白を。</p>
+    <div class="med-row" id="medDur"></div>
+    <button class="bcard" id="breathCard" aria-expanded="false">
+      <span class="bring"><i></i></span>
+      <span><b>呼吸を整える</b><small id="breathDesc">ゆっくり、吸って。吐いて。</small></span>
+      <span class="chev"></span>
+    </button>
+    <div id="breathPanel" hidden>
+      <div class="seg med-kind" id="medKind"><button data-k="mind">マインドフルネス</button><button data-k="relax">リラックス</button></div>
+      <div class="med-row" id="medBreath" style="margin-top:0"></div>
+      <div class="med-hint" id="medHint"></div>
+    </div>
+    <button class="pill-lg" id="medStart">瞑想をはじめる</button>
+    <div class="med-stats" id="medStats"></div>
+  </section>
+</div>
+
+<!-- ===== SOUND ===== -->
+<div class="view" id="viewSound">
+  <div class="s-head">
+    <div><h2 class="h l">サウンド</h2><p class="lead l" style="margin-top:10px">静けさを、選ぶ。</p></div>
+    <div class="s-note">より静かな<br>今日を。<i></i></div>
+  </div>
+  <div class="s-hero" id="sHero">
+    <div class="ring s-ring" id="soundRing"><div class="s-orb"></div></div>
+    <div class="s-mirror"></div>
+    <div class="s-now"><b id="sNowJa">雨音</b><small id="sNowEn">RAIN</small></div>
+    <button class="s-play" id="sPlay" aria-label="再生 / 停止"><svg viewBox="0 0 24 24" id="sPlayIcon"><path d="M8 5v14l11-7z"/></svg></button>
+  </div>
+  <div class="s-grid" id="sGrid"></div>
+  <div id="beatBox" hidden>
+    <div class="seg" id="beatSeg">
+      <button data-beat="2">ディープ<small>2Hz</small></button><button data-beat="6">瞑想<small>6Hz</small></button><button data-beat="10">リラックス<small>10Hz</small></button><button data-beat="16">フォーカス<small>16Hz</small></button>
+    </div>
+    <label class="toggle" style="border-bottom:0;padding-bottom:4px"><span>水音を重ねる</span><input type="checkbox" id="layerToggle"><span class="sw"></span></label>
+    <p class="s-hint" style="margin-top:4px">左右で少し違う高さの音を流し、その差をうなりとして感じる音です。<b>イヤホンで聴いてください</b>。スピーカーでは普通のドローンとして聞こえます。効果の感じ方には個人差があります。光や音の刺激に敏感な方、てんかんの既往がある方は使用を控えてください。</p>
+  </div>
+  <div class="s-vol">
+    <svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/><path d="M15.5 9.5a3.5 3.5 0 0 1 0 5"/><path d="M18 7a7 7 0 0 1 0 10"/></svg>
+    <input type="range" id="volInput" min="0" max="100" step="1" aria-label="音量"><span id="volPct">60%</span>
+  </div>
+  <button class="s-row" id="sleepRow">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <span>自動停止</span><b id="sleepVal">オフ</b><span class="chev"></span>
+  </button>
+  <label class="toggle"><span>節目でチャイムを鳴らす</span><input type="checkbox" id="chimeToggle"><span class="sw"></span></label>
+  <p class="s-hint">音はアプリを開いている間だけ流れます。iPhoneでは画面ロックや他のアプリへの切り替えで止まります。マナーモード中は鳴りません。</p>
+</div>
+
+<!-- ===== RECORDS ===== -->
+<div class="view" id="viewLog">
+  <section class="blk" style="padding-top:22px">
+    <h2 class="h l">記録</h2><div class="rule l"></div><p class="lead l">ふりかえる。</p>
+    <div class="stats">
+      <div class="stat"><b id="stTotal">0</b><span>回</span></div>
+      <div class="stat"><b id="stStreak">0</b><span>連続日</span></div>
+      <div class="stat"><b id="stAvg">0h</b><span>平均</span></div>
+      <div class="stat"><b id="stMax">0h</b><span>最長</span></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="stHours">0h</b><span>合計</span></div>
+      <div class="stat"><b id="stDays">0</b><span>断食日数</span></div>
+      <div class="stat"><b id="stBest">0</b><span>最長連続</span></div>
+      <div class="stat"><b id="stRate">–</b><span>達成率</span></div>
+    </div>
+    <div class="cal-head">
+      <button id="calPrev" aria-label="前の月"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <b id="calTitle"></b>
+      <button id="calNext" aria-label="次の月"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="cal-sum" id="calSum"></div>
+    <div class="cal" id="cal"></div>
+    <div class="cal-legend"><span><i></i>断食した日</span><span><i class="g"></i>目標達成</span><span><i class="m"></i>瞑想</span></div>
+    <div class="cal-day" id="calDay"></div>
+    <ul class="history" id="history" hidden></ul>
+    <div class="empty" id="historyEmpty" hidden>まだ記録がありません</div>
+    <button class="w-more" id="histToggle">すべての断食の記録</button>
+  </section>
+
+  <section class="blk">
+    <div class="label" style="margin-top:0">瞑想の記録</div>
+    <ul class="w-list" id="medList" style="margin-top:0"></ul>
+    <div class="empty" id="medEmpty">まだ記録がありません</div>
+    <button class="w-more" id="medMore" hidden>すべての記録</button>
+  </section>
+
+  <section class="blk" id="weightSec">
+    <div class="label" style="margin-top:0">体重</div>
+    <div id="wEmptyHero" class="w-hero"><div class="v num" style="color:var(--ink3)">--<small>kg</small></div><div class="delta">まだ記録がありません</div></div>
+    <div id="wHero" hidden>
+      <div class="w-hero"><div class="v num"><span id="wCur"></span><small>kg</small></div><div class="delta" id="wDelta"></div></div>
+      <div class="w-bar" id="wBar" hidden><i id="wBarFill"></i></div>
+      <div class="w-meta"><span id="wStart"></span><button id="wGoalBtn">目標を設定</button></div>
+    </div>
+    <div class="w-actions">
+      <button class="ghost" id="wAddBtn">＋ 記録する</button>
+      <button class="ghost" id="wImportBtn">ヘルスケア取り込み</button>
+      <input type="file" id="wFile" accept=".xml,text/xml,application/xml,.zip" class="sr">
+    </div>
+    <div class="w-chart" id="wChart" hidden><div class="tip" id="wTip"></div></div>
+    <div class="w-empty" id="wEmpty">記録すると推移が表示されます</div>
+    <div class="bmi" id="bmi" hidden></div>
+    <ul class="w-list" id="wList"></ul>
+    <button class="w-more" id="wMore" hidden>すべて表示</button>
+  </section>
+</div>
+</main>
+
+<nav class="tabs"><div class="in">
+  <button class="tab active" data-view="viewHome"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>ホーム</button>
+  <button class="tab" data-view="viewSound"><span class="bars"><i style="height:10px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:16px"></i><i style="height:8px"></i></span>サウンド</button>
+  <button class="tab" data-view="viewLog"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-8"/></svg>記録</button>
+</div></nav>
+
+<div id="medOverlay" hidden>
+  <div class="breath" id="breath">
+    <div class="o"></div><div class="c" id="bC"></div><div class="r" id="bR"></div>
+    <div class="txt"><div class="phase" id="bPhase"></div><div class="cnt" id="bCnt"></div></div>
+  </div>
+  <div class="med-time num" id="medTime">10:00</div>
+  <div class="med-sub" id="medSub"></div>
+  <div class="med-ctl" id="medCtl"><button id="medPause">一時停止</button><button id="medStop">終了</button></div>
+  <div class="med-done" id="medDone" hidden><b>おつかれさま</b><p id="medDoneMsg"></p><div class="med-ctl" style="justify-content:center"><button id="medClose">閉じる</button></div></div>
+</div>
+
+<dialog id="askDialog">
+  <h3 id="askTitle">確認</h3>
+  <p id="askMsg" style="font-size:14px;color:var(--ink2);line-height:1.7"></p>
+  <div class="row"><button id="askNo">キャンセル</button><button class="ok" id="askYes">OK</button></div>
+</dialog>
+
+<dialog id="beginDialog">
+  <h3>いつから始めますか</h3>
+  <div class="seg" id="beginSeg" style="margin-bottom:6px">
+    <button data-ago="0">今から</button><button data-ago="30">30分前</button><button data-ago="60">1時間前</button><button data-ago="120">2時間前</button><button data-ago="180">3時間前</button><button data-ago="360">6時間前</button>
+  </div>
+  <label for="beginInput">最後に食べ終えた時刻</label>
+  <input type="datetime-local" id="beginInput">
+  <p class="hint" id="beginHint"></p>
+  <div class="row"><button id="beginCancel">キャンセル</button><button class="ok" id="beginOk">はじめる</button></div>
+</dialog>
+
+<dialog id="startDialog">
+  <h3>開始時刻</h3>
+  <label for="startInput">断食を始めた時刻</label>
+  <input type="datetime-local" id="startInput">
+  <div class="row"><button id="startCancel">キャンセル</button><button class="ok" id="startOk">保存</button></div>
+</dialog>
+
+<dialog id="settingsDialog">
+  <div class="about"><div class="wm">ZENTOKI</div><div class="copy">自分を整える時間を、日常に。</div><div class="sub">断食と瞑想を、ひとつのアプリで。</div><div class="ver">VERSION 1.2</div></div>
+  <h3>設定</h3>
+  <label class="toggle"><span>目標達成を通知</span><input type="checkbox" id="notifyToggle"><span class="sw"></span></label>
+  <label class="toggle"><span>ステージ到達を通知</span><input type="checkbox" id="stageNotifyToggle"><span class="sw"></span></label>
+  <label class="toggle"><span>背景の波紋</span><input type="checkbox" id="rippleToggle"><span class="sw"></span></label>
+  <h3 style="margin-top:22px">バックアップ</h3>
+  <div class="row" style="margin-top:0"><button id="exportBtn">ファイルに書き出し</button><button id="copyBtn">テキストをコピー</button></div>
+  <div class="row"><button id="importBtn">読み込む</button><button class="danger" id="clearBtn">すべて削除</button></div>
+  <input type="file" id="importFile" accept=".json,application/json,text/plain" class="sr">
+  <p class="hint">記録はこの端末の中にだけ保存されます。機種変更やブラウザのデータ削除に備えて、ときどき書き出しておくと安心です。</p>
+  <div class="row"><button id="policyBtn">プライバシーと利用について</button></div>
+  <div class="row"><button class="ok" id="settingsClose">閉じる</button></div>
+  <p class="note">ZENTOKIは医療的助言を行うものではありません。持病のある方や妊娠中の方は医師に相談してください。</p>
+</dialog>
+
+<dialog id="policyDialog">
+  <h3>プライバシーと利用について</h3>
+  <div id="policyBody" style="font-size:13px;color:var(--ink2);line-height:1.8;max-height:60vh;overflow:auto"></div>
+  <div class="row"><button class="ok" id="policyClose">閉じる</button></div>
+</dialog>
+
+<dialog id="pasteDialog">
+  <h3>テキストから読み込む</h3>
+  <textarea id="pasteArea" rows="6" style="width:100%;background:var(--fill);border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:12px;font:inherit;font-size:13px;outline:none" placeholder="書き出したテキストを貼り付けてください"></textarea>
+  <div class="row"><button id="pasteCancel">キャンセル</button><button class="ok" id="pasteOk">読み込む</button></div>
+</dialog>
+
+<div id="onboard" hidden>
+  <div class="ob-card" id="obCard"></div>
+  <div class="ob-dots" id="obDots"></div>
+  <div class="ob-ctl"><button id="obSkip">スキップ</button><button class="ok" id="obNext">次へ</button></div>
+</div>
+
+<dialog id="weightDialog">
+  <h3>体重を記録</h3>
+  <input type="number" id="wInput" class="big" step="0.1" min="20" max="300" inputmode="decimal" placeholder="0.0">
+  <div class="grid2"><div><label for="wDate">日付</label><input type="date" id="wDate"></div><div><label for="wTime">時刻</label><input type="time" id="wTime"></div></div>
+  <div class="row"><button id="wCancel">キャンセル</button><button class="ok" id="wOk">保存</button></div>
+</dialog>
+
+<dialog id="goalDialog">
+  <h3>目標</h3>
+  <div class="grid2">
+    <div><label for="gStart">開始時の体重 kg</label><input type="number" id="gStart" step="0.1" inputmode="decimal" placeholder="自動"></div>
+    <div><label for="gGoal">目標体重 kg</label><input type="number" id="gGoal" step="0.1" inputmode="decimal"></div>
+  </div>
+  <label for="gHeight">身長 cm（BMI表示に使用・任意）</label><input type="number" id="gHeight" step="0.1" inputmode="decimal">
+  <p class="hint">開始時の体重を空にすると、最初の記録が使われます。</p>
+  <div class="row"><button id="gCancel">キャンセル</button><button class="ok" id="gOk">保存</button></div>
+</dialog>
+
+<dialog id="importDialog">
+  <h3>ヘルスケアから取り込む</h3>
+  <p class="hint" style="margin-top:0">iPhoneの「ヘルスケア」アプリ → 右上のプロフィール → 「すべてのヘルスケアデータを書き出す」で export.zip が作られます。ファイルアプリで zip をタップして展開し、中の <b>export.xml</b> を選んでください。体重の記録だけを読み込み、同じ日時の記録は重複しません。</p>
+  <div class="row"><button id="iCancel">キャンセル</button><button class="ok" id="iPick">ファイルを選ぶ</button></div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const H = 3600000;
+const PRESETS = [
+  {id:'12:12', fast:12, eat:12, label:'12:12', sub:'はじめて'},
+  {id:'14:10', fast:14, eat:10, label:'14:10', sub:'軽め'},
+  {id:'16:8',  fast:16, eat:8,  label:'16:8',  sub:'定番'},
+  {id:'18:6',  fast:18, eat:6,  label:'18:6',  sub:''},
+  {id:'20:4',  fast:20, eat:4,  label:'20:4',  sub:''},
+  {id:'omad',  fast:23, eat:1,  label:'OMAD',  sub:'1日1食'},
+  {id:'36h',   fast:36, eat:12, label:'36h',   sub:''},
+  {id:'custom',fast:16, eat:8,  label:'カスタム', sub:''},
+];
+const STAGES = [
+  {h:0,  t:'消化中',           d:'血糖値が上がり、インスリンが分泌されます。食べたものからエネルギーを得ている状態。'},
+  {h:4,  t:'血糖値が安定',     d:'血糖とインスリンが下がり始め、体が蓄えたグリコーゲンを使い始めます。'},
+  {h:8,  t:'脂肪燃焼スタート', d:'グリコーゲンが減り、脂肪をエネルギーとして分解し始めます。'},
+  {h:12, t:'ケトーシス開始',   d:'肝臓がケトン体を作り始めます。脂肪燃焼が本格化する目安。'},
+  {h:16, t:'オートファジー活性化', d:'細胞が古いタンパク質を分解・再利用する働きが高まると言われています。'},
+  {h:24, t:'成長ホルモン増加', d:'成長ホルモンの分泌が増え、筋肉の維持や修復を助けます。'},
+  {h:36, t:'深いオートファジー', d:'ケトン体がさらに増加。長期断食は体調を見ながら、無理をしないでください。'},
+];
+const DAYS = ['日','月','火','水','木','金','土'];
+
+// ---------- state ----------
+const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+let state = load('ft.state', { preset:'16:8', customHours:16, start:null, lastEnd:null, lastEat:null });
+let history = load('ft.history', []);
+let settings = load('ft.settings', { notify:false, stageNotify:false, ripple:true });
+if (settings.ripple === undefined) settings.ripple = true;
+settings.sound = Object.assign({ mode:'rain', on:false, volume:60, chime:true, beat:6, layerWater:false, sleep:0 }, settings.sound || {});
+if (settings.sound.mode === 'off') { settings.sound.mode = 'rain'; settings.sound.on = false; }
+if (settings.sound.mode === 'water') settings.sound.mode = 'stream';
+if (settings.sound.on === undefined) settings.sound.on = false;
+let notified = load('ft.notified', { goal:false, stages:[] });
+let tick = null;
+
+const preset = () => PRESETS.find(p => p.id === state.preset) || PRESETS[2];
+const goalHours = () => state.preset === 'custom' ? Math.max(1, Number(state.customHours) || 16) : preset().fast;
+const goalMs = () => goalHours() * H;
+const eatHours = () => state.preset === 'custom' ? Math.max(0, 24 - goalHours()) : preset().eat;
+
+// ---------- format ----------
+const pad = n => String(n).padStart(2, '0');
+const fmtDur = ms => { ms = Math.max(0, ms); const h = Math.floor(ms / H), m = Math.floor(ms % H / 60000), s = Math.floor(ms % 60000 / 1000); return `${pad(h)}:${pad(m)}:${pad(s)}`; };
+const fmtHM = ms => { const total = Math.round(Math.max(0, ms) / 60000), h = Math.floor(total / 60), m = total % 60; return h ? `${h}時間${m ? m + '分' : ''}` : `${m}分`; };
+const fmtH = ms => (ms / H).toFixed(1).replace(/\.0$/, '') + 'h';
+const fmtTime = ts => { const d = new Date(ts); const today = new Date(); const tm = `${pad(d.getHours())}:${pad(d.getMinutes())}`; if (d.toDateString() === today.toDateString()) return tm; const t2 = new Date(today); t2.setDate(today.getDate() + 1); if (d.toDateString() === t2.toDateString()) return `明日 ${tm}`; const y = new Date(today); y.setDate(today.getDate() - 1); if (d.toDateString() === y.toDateString()) return `昨日 ${tm}`; return `${d.getMonth() + 1}/${d.getDate()} ${tm}`; };
+const fmtDate = ts => { const d = new Date(ts); return `${d.getMonth() + 1}/${d.getDate()} ${DAYS[d.getDay()]}`; };
+const toLocalInput = ts => { const d = new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+// ---------- render ----------
+function renderPresets() {
+  const box = $('#presets');
+  box.innerHTML = '';
+  PRESETS.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'preset' + (p.id === state.preset ? ' active' : '');
+    b.innerHTML = `${p.label}${p.sub ? `<small>${p.sub}</small>` : ''}`;
+    b.disabled = !!state.start;
+    b.onclick = () => { state.preset = p.id; persist(); renderPresets(); renderAll(); };
+    box.appendChild(b);
+  });
+  $('#customRow').hidden = state.preset !== 'custom';
+  $('#customHours').value = state.customHours;
+  $('#customHours').disabled = !!state.start;
+  const active = box.querySelector('.active'); if (active && (active.offsetLeft + active.offsetWidth > box.clientWidth + box.scrollLeft || active.offsetLeft < box.scrollLeft)) box.scrollTo({ left: active.offsetLeft - 48, behavior:'instant' });
+}
+
+function stageIndex(elapsed) { return STAGES.reduce((a, s, i) => elapsed / H >= s.h ? i : a, 0); }
+
+function renderStages(elapsed) {
+  const running = !!state.start;
+  const idx = running ? stageIndex(elapsed) : -1;
+  const cur = running ? STAGES[idx] : null;
+  const next = running ? STAGES[idx + 1] : STAGES[0];
+  $('#stageNow').innerHTML = cur
+    ? `<div><b>${cur.t}</b><p>${cur.d}</p></div><div class="h">${cur.h}h〜</div>`
+    : `<div><b>体の変化</b><p>断食を始めると、経過時間に応じて体の中で起きている変化の目安を表示します。</p></div>`;
+  $('#stageNext').innerHTML = running && next
+    ? `<span>次のステージ</span><b>${next.t} · ${next.h}h</b>`
+    : running ? `<span>最終ステージです</span><b>無理をせず終了してください</b>` : '';
+  $('#stages').innerHTML = STAGES.map((s, i) => {
+    const cls = idx < 0 ? '' : i < idx ? 'past' : i === idx ? 'now' : '';
+    return `<div class="stage ${cls}"><div class="h">${s.h}h</div><div><b>${s.t}</b><p>${s.d}</p></div></div>`;
+  }).join('');
+}
+
+function tipAt(ratio) { const a = -Math.PI / 2 + ratio * Math.PI * 2; return { x: 100 + 92 * Math.cos(a), y: 100 + 92 * Math.sin(a) }; }
+function renderTimer() {
+  const bar = $('#ringBar'), tip = $('#ringTip');
+  const circ = 2 * Math.PI * 92;
+  bar.style.strokeDasharray = circ;
+  if (!state.start) {
+    bar.style.strokeDashoffset = circ; tip.hidden = true;
+    $('#ringLabel').textContent = '目標';
+    $('#ringTime').textContent = `${goalHours()}h`;
+    $('#ringSub').textContent = `食事の時間 ${eatHours()}時間`;
+    $('#remainBig').innerHTML = '';
+    $('#timesBox').hidden = true;
+    $('#mainBtn').textContent = '断食をはじめる';
+    if (renderTimer.lastIdx !== -1) { renderTimer.lastIdx = -1; renderStages(0); }
+    return;
+  }
+  const elapsed = Date.now() - state.start;
+  const goal = goalMs();
+  const ratio = Math.min(1, elapsed / goal);
+  bar.style.strokeDashoffset = circ * (1 - ratio);
+  const tp = tipAt(ratio); tip.hidden = false; tip.setAttribute('cx', tp.x.toFixed(2)); tip.setAttribute('cy', tp.y.toFixed(2));
+  // svg is rotated -90deg, so the tip is placed in un-rotated coordinates starting from the right; compensate
+  const tp2 = tipAt(ratio + 0.25); tip.setAttribute('cx', tp2.x.toFixed(2)); tip.setAttribute('cy', tp2.y.toFixed(2));
+  $('#ringLabel').textContent = elapsed >= goal ? '目標達成' : '経過時間';
+  $('#ringTime').textContent = fmtDur(elapsed);
+  $('#ringSub').textContent = `目標 ${goalHours()}時間`;
+  $('#remainBig').innerHTML = elapsed >= goal ? `<small>目標を超えて</small>${fmtHM(elapsed - goal)}` : `<small>あと</small>${fmtHM(goal - elapsed)}`;
+  $('#timesBox').hidden = false;
+  $('#startedAt').textContent = fmtTime(state.start);
+  $('#goalAt').textContent = fmtTime(state.start + goal);
+  $('#mainBtn').textContent = '断食を終了';
+  const idx = stageIndex(elapsed);
+  if (renderTimer.lastIdx !== idx) { renderTimer.lastIdx = idx; renderStages(elapsed); }
+  checkNotifications(elapsed, goal);
+}
+
+function renderEating() {
+  const card = $('#eatingCard');
+  if (state.start || !state.lastEnd) { card.hidden = true; return; }
+  const until = state.lastEnd + (state.lastEat ?? eatHours()) * H;
+  const remain = until - Date.now();
+  if (remain <= 0) { card.hidden = true; return; }
+  card.hidden = false;
+  $('#eatingRemain').textContent = fmtDur(remain);
+  $('#eatingUntil').textContent = fmtTime(until);
+}
+
+function renderHistory() {
+  const list = $('#history');
+  const sorted = [...history].sort((a, b) => b.end - a.end);
+  list.innerHTML = sorted.slice(0, 30).map(r => {
+    const dur = r.end - r.start;
+    const ok = dur >= r.goal * H;
+    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · 早めに終了'}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${r.goal}h</div><button class="del" data-id="${r.id}" aria-label="削除">×</button></li>`;
+  }).join('');
+  $('#historyEmpty').hidden = list.hidden || history.length > 0;
+  list.querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この記録を削除しますか？', '削除')) { history = history.filter(r => r.id !== b.dataset.id); persist(); renderHistory(); } });
+
+  $('#stTotal').textContent = history.length;
+  const durs = history.map(r => r.end - r.start);
+  $('#stAvg').textContent = durs.length ? fmtH(durs.reduce((a, b) => a + b, 0) / durs.length) : '0h';
+  $('#stMax').textContent = durs.length ? fmtH(Math.max(...durs)) : '0h';
+  $('#stStreak').textContent = streak();
+
+  const totalMs = durs.reduce((a, b) => a + b, 0);
+  $('#stHours').textContent = Math.round(totalMs / H) + 'h';
+  $('#stDays').textContent = new Set(history.map(r => new Date(r.end).toDateString())).size;
+  $('#stBest').textContent = bestStreak();
+  $('#stRate').textContent = history.length ? Math.round(history.filter(r => r.end - r.start >= r.goal * H).length / history.length * 100) + '%' : '–';
+  renderCalendar();
+}
+
+function hoursOn(day) {
+  const s = day.getTime(), e = s + 86400000;
+  let total = 0;
+  for (const r of history) total += Math.max(0, Math.min(r.end, e) - Math.max(r.start, s));
+  if (state.start) total += Math.max(0, Math.min(Date.now(), e) - Math.max(state.start, s));
+  return total;
+}
+
+function streak() {
+  const set = new Set(history.map(r => new Date(r.end).toDateString()));
+  if (state.start) set.add(new Date().toDateString());
+  let n = 0; const d = new Date();
+  if (!set.has(d.toDateString())) d.setDate(d.getDate() - 1);
+  while (set.has(d.toDateString())) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+function renderAll() { renderTimer(); renderEating(); renderHistory(); }
+
+// in-app confirm (native confirm() is blocked inside sandboxed viewers such as claude.ai)
+function ask(msg, okLabel = 'OK', title = '確認') {
+  return new Promise(res => {
+    const d = $('#askDialog'); $('#askTitle').textContent = title; $('#askMsg').textContent = msg; $('#askYes').textContent = okLabel;
+    const done = v => { d.close(); $('#askYes').onclick = $('#askNo').onclick = null; d.oncancel = null; res(v); };
+    $('#askYes').onclick = () => done(true); $('#askNo').onclick = () => done(false); d.oncancel = e => { e.preventDefault(); done(false); };
+    d.showModal();
+  });
+}
+
+// ---------- actions ----------
+function persist() { save('ft.state', state); save('ft.history', history); save('ft.settings', settings); save('ft.notified', notified); }
+
+function startFast(ts = Date.now()) {
+  state.start = Math.min(ts, Date.now());
+  notified = { goal:false, stages:[] };
+  persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); startTick();
+  toast(Date.now() - state.start > 60000 ? `${fmtHM(Date.now() - state.start)}前からの断食として開始` : `${goalHours()}時間の断食を開始`); ripple.burst(3); audio.chime('start');
+}
+
+async function endFast() {
+  const dur = Date.now() - state.start;
+  const ok = dur >= goalMs();
+  if (!ok && !(await ask(`目標まであと${fmtHM(goalMs() - dur)}です。ここで終了しますか？ 記録は残ります。`, '終了する'))) return;
+  if (!state.start) return;
+  history.push({ id: String(Date.now()), start: state.start, end: Date.now(), goal: goalHours(), preset: state.preset });
+  state.lastEnd = Date.now(); state.lastEat = eatHours(); state.start = null;
+  persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll();
+  toast(ok ? `目標達成 · ${fmtHM(dur)}を記録しました` : `${fmtHM(dur)}の断食を記録しました。おつかれさま`); ripple.burst(ok ? 4 : 2); audio.chime(ok ? 'goal' : 'end');
+}
+
+function startTick() { clearInterval(tick); tick = setInterval(() => { renderTimer(); renderEating(); }, 1000); }
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2800); }
+
+// ---------- notifications ----------
+async function ensurePermission() {
+  if (!('Notification' in window)) { toast('この端末は通知に対応していません'); return false; }
+  if (Notification.permission === 'granted') return true;
+  return (await Notification.requestPermission()) === 'granted';
+}
+function notify(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try { new Notification(title, { body, icon: 'icon.svg' }); } catch {}
+}
+function checkNotifications(elapsed, goal) {
+  let changed = false;
+  if (!notified.goal && elapsed >= goal) { if (settings.notify) notify('目標達成', `${goalHours()}時間の断食を達成しました`); notified.goal = true; changed = true; ripple.burst(4); audio.chime('goal'); }
+  STAGES.forEach(s => { if (s.h > 0 && elapsed >= s.h * H && !notified.stages.includes(s.h)) { if (settings.stageNotify) notify(s.t, `${s.h}時間経過`); notified.stages.push(s.h); changed = true; if (elapsed < goal) audio.chime('stage'); } });
+  if (changed) save('ft.notified', notified);
+}
+
+// visuals react to sound: the audio engine calls this on every audible event (note, drip, swell)
+let ripplePulse = () => {};
+
+// ---------- sound (Web Audio, generated on the fly) ----------
+const audio = (() => {
+  let ctx = null, master = null, verb = null, amb = null, ambMode = 'off';
+  const PENTA = [220, 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33, 659.25];
+  const vol = () => Math.pow((settings.sound.volume || 0) / 100, 2);
+  function ensure() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); return ctx; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = vol(); master.connect(ctx.destination);
+    // simple reverb: decaying noise impulse
+    verb = ctx.createConvolver();
+    const len = Math.floor(ctx.sampleRate * 2.6), ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+    verb.buffer = ir; const vg = ctx.createGain(); vg.gain.value = 0.5; verb.connect(vg); vg.connect(master);
+    return ctx;
+  }
+  const noiseBuffer = (seconds, color) => {
+    const len = Math.floor(ctx.sampleRate * seconds), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+    let last = 0; for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; if (color === 'brown') { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
+    return b;
+  };
+  function stopAmb() {
+    if (!amb) return; const a = amb; amb = null; ambMode = 'off';
+    a.out.gain.setTargetAtTime(0, ctx.currentTime, 0.6);
+    clearTimeout(a.timer); clearTimeout(a.timer2); (a.timers || []).forEach(clearTimeout);
+    setTimeout(() => { a.nodes.forEach(n => { try { n.stop && n.stop(); n.disconnect(); } catch {} }); }, 2500);
+  }
+  // schedule fn at `first` ms then every `every` ms while this ambience is alive
+  function every(out, first, everyMs, fn) {
+    const tick = () => { if (!amb || amb.out !== out) return; fn(); amb.timers.push(setTimeout(tick, typeof everyMs === 'function' ? everyMs() : everyMs)); };
+    amb.timers.push(setTimeout(tick, first));
+  }
+  function buildWater(out, nodes, level = 1) {
+    // stream: bright, steady water (energy mostly 2-10 kHz, like the reference), with a bubbling mid layer and tiny pops. No slow swell, no low rumble.
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(7, 'white'); src.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1100; hp.Q.value = 0.5;
+    const pk = ctx.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 5200; pk.Q.value = 0.7; pk.gain.value = 6;
+    const sh = ctx.createBiquadFilter(); sh.type = 'highshelf'; sh.frequency.value = 9000; sh.gain.value = -5;
+    const g = ctx.createGain(); g.gain.value = 0.11 * level;
+    const l1 = ctx.createOscillator(); l1.frequency.value = 0.23; const lg1 = ctx.createGain(); lg1.gain.value = 0.012 * level; l1.connect(lg1); lg1.connect(g.gain);
+    src.connect(hp); hp.connect(pk); pk.connect(sh); sh.connect(g); g.connect(out);
+    // bubbling: a mid band whose level jitters quickly
+    const src2 = ctx.createBufferSource(); src2.buffer = noiseBuffer(5, 'white'); src2.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 1.1;
+    const bp2 = ctx.createBiquadFilter(); bp2.type = 'bandpass'; bp2.frequency.value = 1700; bp2.Q.value = 1.2;
+    const g2 = ctx.createGain(); g2.gain.value = 0.1 * level; const g3 = ctx.createGain(); g3.gain.value = 0.08 * level;
+    src2.connect(bp); bp.connect(g2); g2.connect(out); src2.connect(bp2); bp2.connect(g3); g3.connect(out);
+    [src, src2, l1].forEach(n => n.start()); nodes.push(src, src2, hp, pk, sh, bp, bp2, g, g2, g3, l1, lg1);
+    const jitter = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime; g2.gain.setTargetAtTime((0.03 + Math.random() * 0.14) * level, t, 0.03); g3.gain.setTargetAtTime((0.02 + Math.random() * 0.12) * level, t, 0.03); bp.frequency.setTargetAtTime(600 + Math.random() * 600, t, 0.05); g.gain.setTargetAtTime((0.085 + Math.random() * 0.05) * level, t, 0.08); amb.timer2 = setTimeout(jitter, 50 + Math.random() * 110); };
+    jitter();
+    // tiny bubble pops: short rising sine, very quiet
+    const pop = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime; const o = ctx.createOscillator(); o.type = 'sine'; const f = 350 + Math.random() * 700; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 1.8, t + 0.03); const dg = ctx.createGain(); dg.gain.setValueAtTime(0, t); dg.gain.linearRampToValueAtTime((0.01 + Math.random() * 0.014) * level, t + 0.004); dg.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : null; o.connect(dg); if (pn) { pn.pan.value = (Math.random() - 0.5) * 1.2; dg.connect(pn); pn.connect(out); } else dg.connect(out); o.start(t); o.stop(t + 0.07); if (Math.random() < 0.15) ripplePulse(0.35, 0.04); amb.timer = setTimeout(pop, 150 + Math.random() * 600); };
+    amb.timer = setTimeout(pop, 500);
+    every(out, 5000, () => 8000 + Math.random() * 6000, () => ripplePulse(0.8, 0.5));
+  }
+  function buildDrone(out, nodes) {
+    // drone: soft detuned chord (A, E, A) breathing slowly under a low-pass
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520; lp.Q.value = 0.4; lp.connect(out); lp.connect(verb);
+    const flfo = ctx.createOscillator(); flfo.frequency.value = 0.03; const fg = ctx.createGain(); fg.gain.value = 220; flfo.connect(fg); fg.connect(lp.frequency); flfo.start(); nodes.push(flfo, fg, lp);
+    // a slow swell every ~9 s: the filter opens briefly and a ripple leaves with it
+    every(out, 1500, () => 8000 + Math.random() * 2500, () => { const t = ctx.currentTime; lp.frequency.setTargetAtTime(760, t, 0.9); lp.frequency.setTargetAtTime(520, t + 2.2, 1.6); ripplePulse(1, 0.35); });
+    [[110, 'sine', 0.22], [110.6, 'triangle', 0.06], [165, 'sine', 0.1], [220, 'sine', 0.07], [219.3, 'triangle', 0.03], [55, 'sine', 0.16]].forEach(([f, type, v], i) => {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = f;
+      const g = ctx.createGain(); g.gain.value = v;
+      const l = ctx.createOscillator(); l.frequency.value = 0.05 + i * 0.017; const lg = ctx.createGain(); lg.gain.value = v * 0.5; l.connect(lg); lg.connect(g.gain);
+      o.connect(g); g.connect(lp); o.start(); l.start(); nodes.push(o, g, l, lg);
+    });
+  }
+  function buildBinaural(out, nodes, beat) {
+    // each chord tone is split: left ear at f - beat/2, right ear at f + beat/2. Both ears share one breathing LFO so the beat stays clean.
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.Q.value = 0.3; lp.connect(out); nodes.push(lp);
+    every(out, 1500, () => 8000 + Math.random() * 2500, () => { const t = ctx.currentTime; lp.frequency.setTargetAtTime(1300, t, 0.9); lp.frequency.setTargetAtTime(900, t + 2.2, 1.6); ripplePulse(1, 0.35); });
+    const sub = ctx.createOscillator(); sub.frequency.value = 55; const sg = ctx.createGain(); sg.gain.value = 0.12; sub.connect(sg); sg.connect(lp); sub.start(); nodes.push(sub, sg);
+    [[220, 0.2, 0.04], [330, 0.09, 0.055], [440, 0.05, 0.07], [165, 0.1, 0.03]].forEach(([f, v, rate]) => {
+      const g = ctx.createGain(); g.gain.value = v; g.connect(lp);
+      const l = ctx.createOscillator(); l.frequency.value = rate; const lg = ctx.createGain(); lg.gain.value = v * 0.35; l.connect(lg); lg.connect(g.gain); l.start(); nodes.push(l, lg, g);
+      [[-1, f - beat / 2], [1, f + beat / 2]].forEach(([pan, freq]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+        const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+        if (pn) { pn.pan.value = pan; o.connect(pn); pn.connect(g); nodes.push(pn); } else o.connect(g);
+        o.start(); nodes.push(o);
+      });
+    });
+  }
+  function buildMelody(out, nodes) {
+    // generative ambient in A major: slow pad chords crossfading, sparse pentatonic notes on top. Never repeats exactly.
+    const CHORDS = [
+      { name:'A',   pad:[110, 164.81, 220, 277.18, 329.63], tones:[440, 554.37, 659.25, 880] },
+      { name:'F#m', pad:[92.5, 138.59, 220, 277.18, 329.63], tones:[440, 554.37, 739.99, 880] },
+      { name:'D',   pad:[146.83, 220, 293.66, 369.99, 440],  tones:[440, 587.33, 739.99, 880] },
+      { name:'E',   pad:[82.41, 123.47, 246.94, 329.63, 415.3], tones:[493.88, 659.25, 830.61, 987.77] },
+      { name:'Bm',  pad:[123.47, 185, 246.94, 293.66, 369.99], tones:[493.88, 587.33, 739.99, 987.77] },
+    ];
+    const SCALE = [440, 493.88, 554.37, 659.25, 739.99, 880, 987.77, 1108.73, 1318.51];
+    const padOut = ctx.createGain(); padOut.gain.value = 0.9; const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700; padOut.connect(lp); lp.connect(out); lp.connect(verb); nodes.push(padOut, lp);
+    let cur = 0, padNodes = [];
+    const playPad = chord => {
+      const t = ctx.currentTime; const old = padNodes; padNodes = [];
+      old.forEach(({ g, o }) => { g.gain.cancelScheduledValues(t); g.gain.setTargetAtTime(0, t, 2.5); setTimeout(() => { try { o.stop(); o.disconnect(); g.disconnect(); } catch {} }, 9000); });
+      chord.pad.forEach((f, i) => {
+        const o = ctx.createOscillator(); o.type = i < 2 ? 'sine' : 'triangle'; o.frequency.value = f * (1 + (Math.random() - 0.5) * 0.002);
+        const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.setTargetAtTime([0.16, 0.08, 0.05, 0.04, 0.035][i], t, 3.5);
+        o.connect(g); g.connect(padOut); o.start(t); padNodes.push({ g, o }); nodes.push(o, g);
+      });
+    };
+    const note = (f, t, gain) => {
+      setTimeout(() => ripplePulse(0.5 + gain * 6, 0.04), Math.max(0, (t - ctx.currentTime) * 1000));
+      // soft mallet: fundamental + faint 2nd/3rd partials, quick decay on the partials
+      [[1, 1, 3.2], [2, 0.18, 1.1], [3, 0.06, 0.6]].forEach(([m, v, d]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * m;
+        const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain * v, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+        const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+        o.connect(g); if (pn) { pn.pan.value = (Math.random() - 0.5) * 0.8; g.connect(pn); pn.connect(verb); pn.connect(out); } else { g.connect(verb); g.connect(out); }
+        o.start(t); o.stop(t + d + 0.1);
+      });
+    };
+    let lastTone = null;
+    const phrase = () => {
+      if (!amb || amb.out !== out) return;
+      const chord = CHORDS[cur]; const t = ctx.currentTime + 0.05;
+      const pick = () => { const pool = Math.random() < 0.65 ? chord.tones : SCALE; let f; do { f = pool[Math.floor(Math.random() * pool.length)]; } while (f === lastTone && Math.random() < 0.7); lastTone = f; return f; };
+      const n = Math.random() < 0.3 ? 2 + Math.floor(Math.random() * 2) : 1;
+      for (let i = 0; i < n; i++) note(pick(), t + i * (0.9 + Math.random() * 0.8), 0.07 + Math.random() * 0.04);
+      amb.timer = setTimeout(phrase, 2500 + Math.random() * 4500);
+    };
+    const progress = () => {
+      if (!amb || amb.out !== out) return;
+      // wander through the progression: mostly step forward, sometimes return home
+      cur = Math.random() < 0.25 ? 0 : (cur + 1 + (Math.random() < 0.2 ? 1 : 0)) % CHORDS.length;
+      playPad(CHORDS[cur]); ripplePulse(1.3, 0.6); amb.timer2 = setTimeout(progress, 14000 + Math.random() * 10000);
+    };
+    playPad(CHORDS[0]); amb.timer2 = setTimeout(progress, 16000); amb.timer = setTimeout(phrase, 1500);
+  }
+
+  function buildRain(out, nodes) {
+    // steady soft rain: a wide hiss band with two slow modulations, a low patter layer, and sparse drops
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(6, 'white'); src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.5;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+    const g = ctx.createGain(); g.gain.value = 0.05;
+    const l1 = ctx.createOscillator(); l1.frequency.value = 0.13; const lg1 = ctx.createGain(); lg1.gain.value = 0.012; l1.connect(lg1); lg1.connect(g.gain);
+    const l2 = ctx.createOscillator(); l2.frequency.value = 0.031; const lg2 = ctx.createGain(); lg2.gain.value = 500; l2.connect(lg2); lg2.connect(bp.frequency);
+    src.connect(hp); hp.connect(bp); bp.connect(g); g.connect(out);
+    const src2 = ctx.createBufferSource(); src2.buffer = noiseBuffer(7, 'brown'); src2.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; const g2 = ctx.createGain(); g2.gain.value = 0.16;
+    src2.connect(lp); lp.connect(g2); g2.connect(out);
+    [src, src2, l1, l2].forEach(n => n.start()); nodes.push(src, src2, bp, hp, lp, g, g2, l1, l2, lg1, lg2);
+    const drop = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime; const o = ctx.createOscillator(); o.type = 'sine'; const f = 1800 + Math.random() * 2600; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.7, t + 0.05); const dg = ctx.createGain(); dg.gain.setValueAtTime(0, t); dg.gain.linearRampToValueAtTime(0.012 + Math.random() * 0.012, t + 0.004); dg.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(dg); dg.connect(out); dg.connect(verb); o.start(t); o.stop(t + 0.12); if (Math.random() < 0.35) ripplePulse(0.35, 0.03); amb.timer = setTimeout(drop, 120 + Math.random() * 700); };
+    amb.timer = setTimeout(drop, 400);
+    every(out, 6000, () => 9000 + Math.random() * 6000, () => ripplePulse(0.9, 0.5));
+  }
+  function buildOcean(out, nodes) {
+    // slow waves: brown noise whose filter opens and closes on a long cycle, with a hiss that follows the crest
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(8, 'brown'); src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300; lp.Q.value = 0.5;
+    const g = ctx.createGain(); g.gain.value = 0.22;
+    src.connect(lp); lp.connect(g); g.connect(out);
+    const src2 = ctx.createBufferSource(); src2.buffer = noiseBuffer(6, 'white'); src2.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 0.4;
+    const g2 = ctx.createGain(); g2.gain.value = 0.0; src2.connect(bp); bp.connect(g2); g2.connect(out);
+    [src, src2].forEach(n => n.start()); nodes.push(src, src2, lp, bp, g, g2);
+    const wave = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime; const len = 7 + Math.random() * 5;
+      lp.frequency.cancelScheduledValues(t); lp.frequency.setValueAtTime(lp.frequency.value, t); lp.frequency.linearRampToValueAtTime(900 + Math.random() * 400, t + len * 0.35); lp.frequency.linearRampToValueAtTime(260, t + len);
+      g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0.34, t + len * 0.35); g.gain.linearRampToValueAtTime(0.18, t + len);
+      g2.gain.cancelScheduledValues(t); g2.gain.setValueAtTime(g2.gain.value, t); g2.gain.linearRampToValueAtTime(0.03, t + len * 0.4); g2.gain.linearRampToValueAtTime(0.0, t + len * 0.95);
+      setTimeout(() => ripplePulse(1.3, 0.45), len * 350);
+      amb.timer = setTimeout(wave, len * 1000 + Math.random() * 1500); };
+    amb.timer = setTimeout(wave, 800);
+  }
+  function buildForest(out, nodes) {
+    // forest: no wind bed. A faint high shimmer (leaves, distant insects), soft leaf rustles, and several kinds of birds with distance and space.
+    const src = ctx.createBufferSource(); src.buffer = noiseBuffer(6, 'white'); src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 7000; bp.Q.value = 0.9;
+    const g = ctx.createGain(); g.gain.value = 0.014;
+    const l1 = ctx.createOscillator(); l1.frequency.value = 0.09; const lg1 = ctx.createGain(); lg1.gain.value = 0.006; l1.connect(lg1); lg1.connect(g.gain);
+    src.connect(bp); bp.connect(g); g.connect(out); src.start(); l1.start(); nodes.push(src, bp, g, l1, lg1);
+    // leaf rustle: short bursts of 3-6 kHz noise, panned, a bit of reverb
+    const rustle = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime; const len = 0.25 + Math.random() * 0.6; const b = ctx.createBufferSource(); b.buffer = noiseBuffer(len + 0.1, 'white'); const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 3500 + Math.random() * 2500; f.Q.value = 0.8; const rg = ctx.createGain(); rg.gain.setValueAtTime(0, t); rg.gain.linearRampToValueAtTime(0.02 + Math.random() * 0.02, t + len * 0.4); rg.gain.linearRampToValueAtTime(0, t + len); const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : null; b.connect(f); f.connect(rg); if (pn) { pn.pan.value = (Math.random() - 0.5) * 1.6; rg.connect(pn); pn.connect(out); pn.connect(verb); } else { rg.connect(out); } b.start(t); ripplePulse(0.5, 0.3); amb.timer2 = setTimeout(rustle, 3000 + Math.random() * 7000); };
+    amb.timer2 = setTimeout(rustle, 1500);
+    // birds: a few species, each a small phrase; distance = quieter + more reverb
+    const species = [
+      (t0, base, vol, dest) => { for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) { const t = t0 + i * 0.11; const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(base, t); o.frequency.exponentialRampToValueAtTime(base * 1.35, t + 0.04); o.frequency.exponentialRampToValueAtTime(base * 0.9, t + 0.09); const gg = ctx.createGain(); gg.gain.setValueAtTime(0, t); gg.gain.linearRampToValueAtTime(vol, t + 0.015); gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(gg); gg.connect(dest); o.start(t); o.stop(t + 0.12); } },
+      (t0, base, vol, dest) => { [[1, 0.28], [1.5, 0.32]].forEach(([m, d], i) => { const t = t0 + i * 0.36; const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(base * m, t); o.frequency.linearRampToValueAtTime(base * m * 1.04, t + d); const gg = ctx.createGain(); gg.gain.setValueAtTime(0, t); gg.gain.linearRampToValueAtTime(vol, t + 0.05); gg.gain.setValueAtTime(vol, t + d - 0.06); gg.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(gg); gg.connect(dest); o.start(t); o.stop(t + d + 0.02); }); },
+      (t0, base, vol, dest) => { const n = 6 + Math.floor(Math.random() * 6); for (let i = 0; i < n; i++) { const t = t0 + i * 0.055; const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(base * (1 + 0.08 * Math.sin(i)), t); o.frequency.exponentialRampToValueAtTime(base * 1.15, t + 0.03); const gg = ctx.createGain(); gg.gain.setValueAtTime(0, t); gg.gain.linearRampToValueAtTime(vol * 0.8, t + 0.008); gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.045); o.connect(gg); gg.connect(dest); o.start(t); o.stop(t + 0.06); } },
+    ];
+    const bird = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime + 0.05; const far = Math.random() < 0.5; const vol = far ? 0.012 + Math.random() * 0.008 : 0.026 + Math.random() * 0.016; const base = 1800 + Math.random() * 2200;
+      const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain(); if (pn.pan) pn.pan.value = (Math.random() - 0.5) * 1.6; const dry = ctx.createGain(); dry.gain.value = far ? 0.35 : 0.8; const wet = ctx.createGain(); wet.gain.value = far ? 1.2 : 0.6; pn.connect(dry); dry.connect(out); pn.connect(wet); wet.connect(verb);
+      species[Math.floor(Math.random() * species.length)](t, base, vol, pn); ripplePulse(far ? 0.3 : 0.5, 0.06); amb.timer = setTimeout(bird, 1800 + Math.random() * 7000); };
+    amb.timer = setTimeout(bird, 1200);
+  }
+  function buildFire(out, nodes) {
+    // campfire, modelled on the reference: bright short crackles (4-16 kHz) in loose clusters, occasional pops with a low thump (120-250 Hz), a faint ember hiss. No roar, no wind.
+    const bed = ctx.createBufferSource(); bed.buffer = noiseBuffer(6, 'white'); bed.loop = true;
+    const bhp = ctx.createBiquadFilter(); bhp.type = 'highpass'; bhp.frequency.value = 5000; const bg = ctx.createGain(); bg.gain.value = 0.006;
+    bed.connect(bhp); bhp.connect(bg); bg.connect(out);
+    const emb = ctx.createBufferSource(); emb.buffer = noiseBuffer(6, 'brown'); emb.loop = true;
+    const ebp = ctx.createBiquadFilter(); ebp.type = 'bandpass'; ebp.frequency.value = 180; ebp.Q.value = 0.8; const eg = ctx.createGain(); eg.gain.value = 0.014;
+    emb.connect(ebp); ebp.connect(eg); eg.connect(out);
+    bed.start(); emb.start(); nodes.push(bed, bhp, bg, emb, ebp, eg);
+    const emberBreath = () => { if (!amb || amb.out !== out) return; eg.gain.setTargetAtTime(0.006 + Math.random() * 0.016, ctx.currentTime, 0.3); amb.timer2 = setTimeout(emberBreath, 400 + Math.random() * 900); };
+    emberBreath();
+    const crackle = () => { if (!amb || amb.out !== out) return; const t = ctx.currentTime; const n = Math.random() < 0.3 ? 3 + Math.floor(Math.random() * 4) : 1;
+      for (let i = 0; i < n; i++) { const t0 = t + i * (0.02 + Math.random() * 0.06); const big = Math.random() < 0.12; const b = ctx.createBufferSource(); b.buffer = noiseBuffer(0.04, 'white'); const f = ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = big ? 2500 : 4000 + Math.random() * 4000; f.Q.value = 0.7; const cg = ctx.createGain(); const v = big ? 0.22 + Math.random() * 0.14 : 0.07 + Math.random() * 0.1; cg.gain.setValueAtTime(0, t0); cg.gain.linearRampToValueAtTime(v, t0 + 0.002); cg.gain.exponentialRampToValueAtTime(0.0001, t0 + (big ? 0.03 : 0.006 + Math.random() * 0.014)); const pn = ctx.createStereoPanner ? ctx.createStereoPanner() : null; b.connect(f); f.connect(cg); if (pn) { pn.pan.value = (Math.random() - 0.5) * 0.9; cg.connect(pn); pn.connect(out); } else cg.connect(out); b.start(t0);
+        if (big) { const o = ctx.createOscillator(); o.type = 'sine'; const lf = 130 + Math.random() * 90; o.frequency.setValueAtTime(lf * 1.3, t0); o.frequency.exponentialRampToValueAtTime(lf, t0 + 0.05); const og = ctx.createGain(); og.gain.setValueAtTime(0, t0); og.gain.linearRampToValueAtTime(0.11, t0 + 0.004); og.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.11); o.connect(og); og.connect(out); o.start(t0); o.stop(t0 + 0.13); ripplePulse(0.55, 0.03); } }
+      amb.timer = setTimeout(crackle, 70 + Math.random() * 260); };
+    amb.timer = setTimeout(crackle, 200);
+  }
+  const ambKey = () => settings.sound.mode === 'binaural' ? `binaural:${settings.sound.beat}:${settings.sound.layerWater ? 1 : 0}` : settings.sound.mode;
+  function startAmb(mode) {
+    if (!ensure() || mode === 'off') { stopAmb(); return; }
+    const key = ambKey(); if (ambMode === key) return; stopAmb();
+    const out = ctx.createGain(); out.gain.value = 0; out.connect(master); out.gain.setTargetAtTime(1, ctx.currentTime + 0.05, 1.2);
+    const nodes = [];
+    amb = { out, nodes, timer: null, timer2: null, timers: [] }; ambMode = key;
+    if (mode === 'stream') buildWater(out, nodes);
+    else if (mode === 'rain') buildRain(out, nodes);
+    else if (mode === 'ocean') buildOcean(out, nodes);
+    else if (mode === 'forest') buildForest(out, nodes);
+    else if (mode === 'fire') buildFire(out, nodes);
+    else if (mode === 'drone') buildDrone(out, nodes);
+    else if (mode === 'melody') buildMelody(out, nodes);
+    else { buildBinaural(out, nodes, Number(settings.sound.beat) || 6); if (settings.sound.layerWater) buildWater(out, nodes, 0.45); }
+  }
+  // a soft bell used for ripples and stage chimes
+  function bell(freq, t, dur = 2.4, gain = 0.08) {
+    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+    const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = freq * 2.01;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    const g2 = ctx.createGain(); g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(gain * 0.25, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.4);
+    o.connect(g); o2.connect(g2); g.connect(verb); g.connect(master); g2.connect(verb);
+    o.start(t); o2.start(t); o.stop(t + dur); o2.stop(t + dur);
+  }
+  function bowl(freq = 330, gain = 0.14, dur = 7) {
+    if (!ensure()) return; const t = ctx.currentTime + 0.02;
+    [[1, 1, dur], [2.76, 0.28, dur * 0.6], [5.4, 0.08, dur * 0.35], [1.005, 0.5, dur]].forEach(([m, v, d]) => {
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq * m;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain * v, t + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(verb); g.connect(master); o.start(t); o.stop(t + d + 0.1);
+    });
+  }
+  function chime(kind) {
+    if (!settings.sound.chime || !ensure()) return;
+    const t = ctx.currentTime + 0.02;
+    const seq = { start: [[440, 0], [659.25, 0.18]], end: [[659.25, 0], [440, 0.2]], goal: [[440, 0], [554.37, 0.16], [659.25, 0.32], [880, 0.5]], stage: [[523.25, 0]] }[kind] || [[523.25, 0]];
+    seq.forEach(([f, d]) => bell(f, t + d, 2.8, 0.1));
+    if (navigator.vibrate) try { navigator.vibrate(kind === 'goal' ? [30, 60, 30] : 20); } catch {}
+  }
+  return {
+    apply() { if (settings.sound.on) startAmb(settings.sound.mode); else if (ctx) stopAmb(); if (master) master.gain.setTargetAtTime(vol(), ctx.currentTime, 0.05); },
+    prime() { ensure(); }, chime, bowl,
+    get active() { return ambMode !== 'off'; }
+  };
+})();
+
+// ---------- ripple background ----------
+const ripple = (() => {
+  const cv = $('#ripples'); const cx = cv.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W = 0, Hh = 0, dpr = 1, waves = [], nextAt = 0, raf = null, enabled = settings.ripple;
+  const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; Hh = innerHeight; cv.width = W * dpr; cv.height = Hh * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  addEventListener('resize', resize); resize();
+  const origin = () => { const r = ($('.view.active .ring') || $('#homeRing')).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, r0: r.width / 2 }; };
+  const maxR = () => Math.hypot(W, Hh) * 0.72;
+  const spawn = (strength = 1, attack = 0.2) => { waves.push({ born: performance.now(), strength, attack }); if (waves.length > 10) waves.shift(); };
+  const interval = () => state.start ? 2800 : 4400;
+  const life = 9500;
+  const hasConic = typeof cx.createConicGradient === 'function';
+  function paintWave(o, R, t, w) {
+    const p = Math.max(0, (t - w.born) / life); // rAF timestamps can trail performance.now() slightly
+    const e = 1 - Math.pow(1 - p, 2.2);
+    const r = o.r0 * 0.9 + e * (R - o.r0);
+    const atk = w.attack ?? 0.2; // fraction of life spent rising: short for plucked notes, long for swells
+    const fade = p < atk ? Math.sin(p / atk * Math.PI / 2) : Math.cos((p - atk) / (1 - atk) * Math.PI / 2);
+    const a = 0.40 * fade * w.strength * (1 - p * 0.5);
+    const width = 14 + 70 * e;
+    let g;
+    if (hasConic) {
+      g = cx.createConicGradient(-Math.PI * 0.75, o.x, o.y);
+      g.addColorStop(0,    `rgba(235,236,240,${a})`);
+      g.addColorStop(0.18, `rgba(200,203,210,${a * 0.75})`);
+      g.addColorStop(0.5,  `rgba(120,124,132,${a * 0.22})`);
+      g.addColorStop(0.82, `rgba(200,203,210,${a * 0.75})`);
+      g.addColorStop(1,    `rgba(235,236,240,${a})`);
+    } else g = `rgba(200,203,210,${a * 0.6})`;
+    cx.beginPath(); cx.arc(o.x, o.y, r, 0, Math.PI * 2); cx.lineWidth = width; cx.strokeStyle = g; cx.stroke();
+    cx.beginPath(); cx.arc(o.x, o.y, r + width * 0.35, 0, Math.PI * 2); cx.lineWidth = 2.5; cx.strokeStyle = `rgba(255,255,255,${a * 0.9})`; cx.stroke();
+    cx.beginPath(); cx.arc(o.x, o.y, Math.max(1, r - width * 0.55), 0, Math.PI * 2); cx.lineWidth = width * 0.5; cx.strokeStyle = `rgba(0,0,0,${a * 0.9})`; cx.stroke();
+  }
+  function frame(t) {
+    raf = requestAnimationFrame(frame);
+    if (document.hidden || !enabled) return;
+    if (t >= nextAt) { if (!audio.active) spawn(); nextAt = t + interval(); }
+    cx.clearRect(0, 0, W, Hh);
+    const o = origin(); const R = maxR();
+    waves = waves.filter(w => t - w.born < life);
+    for (const w of waves) paintWave(o, R, t, w);
+  }
+  function drawStatic() {
+    cx.clearRect(0, 0, W, Hh); if (!enabled) return; const o = origin();
+    [1.3, 1.9, 2.7].forEach((k, i) => { cx.beginPath(); cx.arc(o.x, o.y, o.r0 * k, 0, Math.PI * 2); cx.lineWidth = 24 + i * 20; cx.strokeStyle = `rgba(200,203,210,${0.14 - i * 0.03})`; cx.stroke(); });
+  }
+  if (reduce) { drawStatic(); addEventListener('resize', drawStatic); addEventListener('scroll', drawStatic, { passive: true }); return { burst() {}, set(v) { enabled = v; drawStatic(); } }; }
+  raf = requestAnimationFrame(frame);
+  ripplePulse = (strength = 1, attack = 0.2) => { if (enabled) spawn(strength, attack); };
+  return {
+    burst(n = 3) { if (!enabled) return; for (let i = 0; i < n; i++) setTimeout(() => spawn(1.4), i * 260); nextAt = performance.now() + interval(); },
+    set(v) { enabled = v; if (!v) { waves = []; cx.clearRect(0, 0, W, Hh); } }
+  };
+})();
+
+// ---------- events ----------
+$('#mainBtn').onclick = () => state.start ? endFast() : openBegin();
+function openBegin() {
+  const now = Date.now(); $('#beginInput').value = toLocalInput(now); $('#beginInput').max = toLocalInput(now);
+  $('#beginSeg').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.ago === '0'));
+  updateBeginHint(); $('#beginDialog').showModal();
+}
+function updateBeginHint() {
+  const ts = new Date($('#beginInput').value).getTime(); if (!isFinite(ts)) { $('#beginHint').textContent = ''; return; }
+  const ago = Date.now() - ts; const end = ts + goalMs();
+  $('#beginHint').textContent = (ago > 60000 ? `${fmtHM(ago)}前から開始として記録します。` : '今から開始します。') + ` 目標の${goalHours()}時間に達するのは ${fmtTime(end)} です。`;
+}
+$('#beginSeg').querySelectorAll('button').forEach(b => b.onclick = () => { $('#beginInput').value = toLocalInput(Date.now() - Number(b.dataset.ago) * 60000); $('#beginSeg').querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b)); updateBeginHint(); });
+$('#beginInput').oninput = () => { $('#beginSeg').querySelectorAll('button').forEach(x => x.classList.remove('active')); updateBeginHint(); };
+$('#beginCancel').onclick = () => $('#beginDialog').close();
+$('#beginOk').onclick = () => {
+  const ts = new Date($('#beginInput').value).getTime();
+  if (!isFinite(ts)) { toast('時刻を入力してください'); return; }
+  if (ts > Date.now() + 60000) { toast('未来の時刻は指定できません'); return; }
+  if (Date.now() - ts > 7 * 86400000) { toast('7日より前は指定できません'); return; }
+  $('#beginDialog').close(); startFast(ts);
+};
+$('#customHours').oninput = e => { state.customHours = Number(e.target.value) || 16; persist(); renderTimer(); };
+$('#editStart').onclick = () => { $('#startInput').value = toLocalInput(state.start); $('#startInput').max = toLocalInput(Date.now()); $('#startDialog').showModal(); };
+$('#startCancel').onclick = () => $('#startDialog').close();
+$('#startOk').onclick = () => {
+  const v = new Date($('#startInput').value).getTime();
+  if (!v || v > Date.now()) { toast('未来の時刻は指定できません'); return; }
+  state.start = v; notified = { goal:false, stages:[] }; persist(); renderTimer.lastIdx = -2; renderAll(); $('#startDialog').close();
+};
+$('#settingsBtn').onclick = () => { $('#notifyToggle').checked = settings.notify; $('#stageNotifyToggle').checked = settings.stageNotify; $('#rippleToggle').checked = settings.ripple; $('#settingsDialog').showModal(); };
+$('#settingsClose').onclick = () => $('#settingsDialog').close();
+$('#notifyToggle').onchange = async e => { settings.notify = e.target.checked && await ensurePermission(); e.target.checked = settings.notify; persist(); };
+$('#stageNotifyToggle').onchange = async e => { settings.stageNotify = e.target.checked && await ensurePermission(); e.target.checked = settings.stageNotify; persist(); };
+$('#rippleToggle').onchange = e => { settings.ripple = e.target.checked; persist(); ripple.set(settings.ripple); };
+document.addEventListener('visibilitychange', () => { if (!document.hidden) renderAll(); });
+
+function bestStreak() {
+  const days = [...new Set(history.map(r => { const d = new Date(r.end); d.setHours(0,0,0,0); return d.getTime(); }))].sort((a, b) => a - b);
+  let best = 0, run = 0, prev = null;
+  for (const t of days) { run = prev !== null && t - prev <= 86400000 * 1.5 ? run + 1 : 1; best = Math.max(best, run); prev = t; }
+  return best;
+}
+
+// ---------- calendar ----------
+let calMonth = (() => { const d = new Date(); d.setDate(1); d.setHours(0,0,0,0); return d; })();
+let calSel = null;
+const dayKey = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+function dayMeds(day) { const s0 = day.getTime(), e0 = s0 + 86400000; return (typeof meds !== 'undefined' ? meds : []).filter(m => m.ts >= s0 && m.ts < e0).sort((a, b) => a.ts - b.ts); }
+function dayRecords(day) { const s0 = day.getTime(), e0 = s0 + 86400000; return history.filter(r => r.end >= s0 && r.end < e0).sort((a, b) => a.end - b.end); }
+function renderCalendar() {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  $('#calTitle').textContent = `${y}年${m + 1}月`;
+  const today = new Date(); today.setHours(0,0,0,0);
+  $('#calNext').disabled = calMonth >= new Date(today.getFullYear(), today.getMonth(), 1);
+  $('#calNext').style.visibility = $('#calNext').disabled ? 'hidden' : '';
+  const first = new Date(y, m, 1); const startDow = first.getDay();
+  const cells = []; const start = new Date(y, m, 1 - startDow);
+  let mDays = 0, mHours = 0, mGoal = 0, mCount = 0;
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    if (i >= 35 && d.getMonth() !== m) break;
+    const inMonth = d.getMonth() === m; const future = d > today;
+    const ms = future ? 0 : hoursOn(d); const recs = dayRecords(d);
+    const goal = recs.some(r => r.end - r.start >= r.goal * H);
+    if (inMonth && !future) { if (ms > 0) { mDays++; mHours += ms; } mCount += recs.length; if (goal) mGoal++; }
+    const md = dayMeds(d);
+    const cls = ['d', inMonth ? '' : 'out', future ? 'future' : '', d.getTime() === today.getTime() ? 'today' : '', ms > 0 ? 'has' : '', goal ? 'goal' : '', md.length ? 'med' : '', calSel && dayKey(d) === dayKey(calSel) ? 'sel' : ''].filter(Boolean).join(' ');
+    cells.push(`<button class="${cls}" data-t="${d.getTime()}" ${future ? 'disabled' : ''} aria-label="${d.getMonth() + 1}月${d.getDate()}日 ${ms ? fmtHM(ms) : '記録なし'}${md.length ? ' 瞑想あり' : ''}"><span>${d.getDate()}</span><i class="dot"></i><i class="dot2"></i></button>`);
+  }
+  $('#cal').innerHTML = DAYS.map(d => `<div class="dow">${d}</div>`).join('') + cells.join('');
+  $('#calSum').innerHTML = mDays ? `断食 <b>${mDays}日</b> · 合計 <b>${Math.round(mHours / H)}h</b> · 達成 <b>${mGoal}回</b>${mCount ? ` · 平均 <b>${fmtH(mHours / Math.max(1, mDays))}</b>` : ''}` : 'この月の記録はありません';
+  $('#cal').querySelectorAll('.d').forEach(b => b.onclick = () => { const d = new Date(Number(b.dataset.t)); calSel = calSel && dayKey(calSel) === dayKey(d) ? null : d; renderCalendar(); });
+  renderCalDay();
+}
+function renderCalDay() {
+  const box = $('#calDay');
+  if (!calSel) { box.innerHTML = '<div class="t"><span>日付をタップすると、その日の記録が見られます</span></div>'; return; }
+  const recs = dayRecords(calSel); const ms = hoursOn(calSel); const md = dayMeds(calSel);
+  let html = `<div class="t"><span>${calSel.getMonth() + 1}月${calSel.getDate()}日 ${DAYS[calSel.getDay()]}</span><span>${ms ? '断食 ' + fmtHM(ms) : ''}${md.length ? (ms ? ' · ' : '') + '瞑想 ' + md.reduce((a, m) => a + m.min, 0) + '分' : ''}</span></div>`;
+  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>断食 ${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${r.goal}h${ok ? '' : ' · 早めに終了'}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
+  else if (ms) html += `<div>別の日に終了した断食の時間です</div>`;
+  if (md.length) html += `<ul>${md.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>瞑想 ${fmtTime(m.ts)}${br ? ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span><b>${m.min}分</b></li>`; }).join('')}</ul>`;
+  if (!recs.length && !ms && !md.length) html += `<div>この日は記録がありません</div>`;
+  box.innerHTML = html;
+}
+$('#calPrev').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCalendar(); };
+$('#calNext').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCalendar(); };
+$('#histToggle').onclick = () => { const h = $('#history'); const open = h.hidden; h.hidden = !open; $('#historyEmpty').hidden = !open || history.length > 0; $('#histToggle').textContent = open ? '閉じる' : 'すべての断食の記録'; };
+
+// ---------- weight ----------
+let weights = load('ft.weights', []);        // {id, ts, kg, src}
+let wgoal = load('ft.wgoal', { start:null, goal:null, height:null });
+let wShowAll = false;
+const wSorted = () => [...weights].sort((a, b) => a.ts - b.ts);
+const fmtKg = v => (Math.round(v * 10) / 10).toFixed(1);
+const wStartKg = () => wgoal.start ?? (weights.length ? wSorted()[0].kg : null);
+
+function renderWeight() {
+  const list = wSorted();
+  const has = list.length > 0;
+  $('#wEmptyHero').hidden = has; $('#wHero').hidden = !has;
+  $('#wEmpty').hidden = has; $('#wChart').hidden = !has;
+  if (has) {
+    const cur = list[list.length - 1];
+    $('#wCur').textContent = fmtKg(cur.kg);
+    const start = wStartKg();
+    const d = cur.kg - start;
+    const parts = [];
+    if (Math.abs(d) >= 0.05) parts.push(`開始から <b>${d > 0 ? '+' : '−'}${fmtKg(Math.abs(d))} kg</b>`);
+    if (wgoal.goal) { const r = cur.kg - wgoal.goal; parts.push(r > 0.05 ? `目標まで <b>${fmtKg(r)} kg</b>` : '<b>目標達成</b>'); }
+    $('#wDelta').innerHTML = parts.join('<br>') || '<b>記録開始</b>';
+    const meta = [`開始 ${fmtKg(start)}`]; if (wgoal.goal) meta.push(`目標 ${fmtKg(wgoal.goal)}`);
+    $('#wStart').textContent = meta.join(' · ');
+    $('#wGoalBtn').textContent = wgoal.goal ? '変更' : '目標を設定';
+    const bar = $('#wBar');
+    if (wgoal.goal && Math.abs(start - wgoal.goal) > 0.05) {
+      bar.hidden = false;
+      const p = Math.max(0, Math.min(1, (start - cur.kg) / (start - wgoal.goal)));
+      $('#wBarFill').style.width = (p * 100).toFixed(1) + '%';
+    } else bar.hidden = true;
+    renderWeightChart(list);
+    const bmiEl = $('#bmi');
+    if (wgoal.height) {
+      const h = wgoal.height / 100; const bmi = cur.kg / (h * h);
+      const cls = bmi < 18.5 ? '低体重' : bmi < 25 ? '普通体重' : bmi < 30 ? '肥満（1度）' : '肥満（2度以上）';
+      bmiEl.hidden = false; bmiEl.innerHTML = `<span><b>${bmi.toFixed(1)}</b>BMI · ${cls}</span><span>身長 ${wgoal.height} cm</span>`;
+    } else bmiEl.hidden = true;
+  } else { $('#bmi').hidden = true; }
+  const desc = [...list].reverse();
+  const shown = wShowAll ? desc : desc.slice(0, 5);
+  $('#wList').innerHTML = shown.map(w => `<li><span>${fmtDate(w.ts)} ${pad(new Date(w.ts).getHours())}:${pad(new Date(w.ts).getMinutes())}${w.src === 'health' ? '<span class="src">HEALTH</span>' : ''}</span><b>${fmtKg(w.kg)}</b><button class="del" data-id="${w.id}" aria-label="削除">×</button></li>`).join('');
+  $('#wList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この記録を削除しますか？', '削除')) { weights = weights.filter(w => w.id !== b.dataset.id); save('ft.weights', weights); renderWeight(); } });
+  const more = $('#wMore'); more.hidden = desc.length <= 5; more.textContent = wShowAll ? '閉じる' : `すべて表示 (${desc.length})`;
+}
+
+function renderWeightChart(list) {
+  const box = $('#wChart'); const W = box.clientWidth || 320, Hc = 150, padL = 0, padR = 34, padT = 14, padB = 22;
+  const now = Date.now(); const span = Math.max(30 * 86400000, now - list[0].ts);
+  const from = now - span;
+  const pts = list.filter(w => w.ts >= from - 86400000);
+  const vals = pts.map(p => p.kg).concat(wgoal.goal ? [wgoal.goal] : []);
+  let lo = Math.min(...vals), hi = Math.max(...vals); if (hi - lo < 2) { const m = (hi + lo) / 2; lo = m - 1; hi = m + 1; }
+  const padY = (hi - lo) * 0.15; lo -= padY; hi += padY;
+  const X = ts => padL + (ts - from) / (now - from) * (W - padL - padR);
+  const Y = v => padT + (hi - v) / (hi - lo) * (Hc - padT - padB);
+  const path = pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.ts).toFixed(1)},${Y(p.kg).toFixed(1)}`).join(' ');
+  const area = pts.length > 1 ? `${path} L${X(pts[pts.length - 1].ts).toFixed(1)},${Hc - padB} L${X(pts[0].ts).toFixed(1)},${Hc - padB} Z` : '';
+  const ticks = [lo + padY, (hi + lo) / 2, hi - padY];
+  const months = []; { const d = new Date(from); d.setDate(1); d.setHours(0,0,0,0); d.setMonth(d.getMonth() + 1); while (d.getTime() < now) { months.push(new Date(d)); d.setMonth(d.getMonth() + 1); } }
+  const xl = span <= 45 * 86400000
+    ? [0, .5, 1].map(f => { const t = from + f * (now - from); return { x: X(t), t: `${new Date(t).getMonth() + 1}/${new Date(t).getDate()}` }; })
+    : months.map(d => ({ x: X(d.getTime()), t: `${d.getMonth() + 1}月` }));
+  box.innerHTML = `<div class="tip" id="wTip"></div><svg viewBox="0 0 ${W} ${Hc}" preserveAspectRatio="none">
+    <defs><linearGradient id="wfade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    ${ticks.map(v => `<line class="grid" x1="${padL}" x2="${W - padR}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}"/><text x="${W - padR + 8}" y="${(Y(v) + 3).toFixed(1)}">${fmtKg(v)}</text>`).join('')}
+    ${wgoal.goal ? `<line class="goal" x1="${padL}" x2="${W - padR}" y1="${Y(wgoal.goal).toFixed(1)}" y2="${Y(wgoal.goal).toFixed(1)}"/>` : ''}
+    ${area ? `<path class="area" d="${area}"/>` : ''}
+    <path class="line" d="${path}"/>
+    ${pts.map((p, i) => `<circle class="pt ${i === pts.length - 1 ? 'last' : ''}" cx="${X(p.ts).toFixed(1)}" cy="${Y(p.kg).toFixed(1)}" r="${i === pts.length - 1 ? 3.5 : 2.5}"/>`).join('')}
+    ${pts.map(p => `<circle class="hit" cx="${X(p.ts).toFixed(1)}" cy="${Y(p.kg).toFixed(1)}" r="12" data-x="${X(p.ts).toFixed(1)}" data-y="${Y(p.kg).toFixed(1)}" data-t="${fmtDate(p.ts)} ${fmtKg(p.kg)} kg"/>`).join('')}
+    ${xl.map(l => `<text x="${l.x.toFixed(1)}" y="${Hc - 4}" text-anchor="middle">${l.t}</text>`).join('')}
+  </svg>`;
+  const tip = $('#wTip');
+  box.querySelectorAll('.hit').forEach(h => {
+    const show = () => { tip.textContent = h.dataset.t; tip.style.left = h.dataset.x + 'px'; tip.style.top = h.dataset.y + 'px'; tip.classList.add('show'); };
+    h.addEventListener('mouseenter', show); h.addEventListener('touchstart', show, { passive: true });
+    h.addEventListener('mouseleave', () => tip.classList.remove('show'));
+  });
+}
+
+function addWeight(kg, ts, src = 'manual') {
+  const id = `${ts}-${Math.round(kg * 10)}`;
+  if (weights.some(w => w.id === id)) return false;
+  weights.push({ id, ts, kg: Math.round(kg * 10) / 10, src });
+  return true;
+}
+
+// Apple Health export.xml: pull BodyMass records only. Reads the file in slices so a large export doesn't need to fit in memory at once.
+async function importHealthXml(file) {
+  const CH = 8 * 1024 * 1024; let off = 0, rest = '', added = 0, seen = 0;
+  const dec = new TextDecoder();
+  const re = /<Record[^>]*type="HKQuantityTypeIdentifierBodyMass"[^>]*\/?>/g;
+  const attr = (tag, n) => { const m = tag.match(new RegExp(`\\s${n}="([^"]*)"`)); return m ? m[1] : null; };
+  toast('読み込み中…');
+  while (off < file.size) {
+    const buf = await file.slice(off, off + CH).arrayBuffer(); off += CH;
+    let text = rest + dec.decode(buf, { stream: off < file.size });
+    const cut = off < file.size ? text.lastIndexOf('\n') : text.length;
+    rest = text.slice(cut); text = text.slice(0, cut);
+    for (const m of text.matchAll(re)) {
+      const tag = m[0]; seen++;
+      const unit = attr(tag, 'unit') || 'kg'; let v = parseFloat(attr(tag, 'value'));
+      if (!isFinite(v)) continue;
+      if (unit === 'lb') v *= 0.45359237; else if (unit === 'g') v /= 1000;
+      const ts = Date.parse((attr(tag, 'startDate') || '').replace(' ', 'T').replace(/ (\+|-)(\d{2})(\d{2})$/, '$1$2:$3').replace(/(\d)(\+|-)(\d{2})(\d{2})$/, '$1$2$3:$4'));
+      if (!isFinite(ts)) continue;
+      if (addWeight(v, ts, 'health')) added++;
+    }
+  }
+  save('ft.weights', weights); renderWeight();
+  toast(seen ? `${added}件を取り込みました（${seen}件中）` : '体重の記録が見つかりませんでした');
+}
+
+$('#wAddBtn').onclick = () => {
+  const d = new Date(); const last = wSorted().at(-1);
+  $('#wInput').value = last ? fmtKg(last.kg) : ''; $('#wDate').value = toLocalInput(d.getTime()).slice(0, 10); $('#wTime').value = toLocalInput(d.getTime()).slice(11, 16);
+  $('#weightDialog').showModal(); setTimeout(() => { $('#wInput').focus(); $('#wInput').select(); }, 50);
+};
+$('#wCancel').onclick = () => $('#weightDialog').close();
+$('#wOk').onclick = () => {
+  const kg = parseFloat($('#wInput').value); const ts = new Date(`${$('#wDate').value}T${$('#wTime').value || '00:00'}`).getTime();
+  if (!(kg > 20 && kg < 300)) { toast('体重を入力してください'); return; }
+  if (!isFinite(ts) || ts > Date.now() + 60000) { toast('未来の日時は指定できません'); return; }
+  if (!addWeight(kg, ts)) { toast('同じ記録があります'); return; }
+  save('ft.weights', weights); renderWeight(); $('#weightDialog').close(); toast(`${fmtKg(kg)} kg を記録しました`);
+};
+$('#wGoalBtn').onclick = () => { $('#gStart').value = wgoal.start ?? ''; $('#gGoal').value = wgoal.goal ?? ''; $('#gHeight').value = wgoal.height ?? ''; $('#goalDialog').showModal(); };
+$('#gCancel').onclick = () => $('#goalDialog').close();
+$('#gOk').onclick = () => {
+  const n = v => { const x = parseFloat(v); return isFinite(x) && x > 0 ? x : null; };
+  wgoal = { start: n($('#gStart').value), goal: n($('#gGoal').value), height: n($('#gHeight').value) };
+  save('ft.wgoal', wgoal); renderWeight(); $('#goalDialog').close();
+};
+$('#wMore').onclick = () => { wShowAll = !wShowAll; renderWeight(); };
+$('#wImportBtn').onclick = () => $('#importDialog').showModal();
+$('#iCancel').onclick = () => $('#importDialog').close();
+$('#iPick').onclick = () => { $('#importDialog').close(); $('#wFile').click(); };
+$('#wFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  if (/\.zip$/i.test(f.name)) { toast('zipは展開してから export.xml を選んでください'); return; }
+  try { await importHealthXml(f); } catch (err) { console.error(err); toast('読み込みに失敗しました'); }
+};
+addEventListener('resize', () => { if (weights.length) renderWeightChart(wSorted()); });
+
+// sound UI
+// sound screen
+const SOUNDS = [
+  { id:'rain',     ja:'雨音',     en:'RAIN',     icon:'<path d="M6 13a5 5 0 0 1 12 0"/><path d="M12 13v5a2 2 0 0 1-2 2M6 13V8a6 6 0 0 1 12 0v5"/><path d="M4 13h16"/>' },
+  { id:'ocean',    ja:'波音',     en:'OCEAN',    icon:'<path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M3 19c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>' },
+  { id:'forest',   ja:'森',       en:'FOREST',   icon:'<path d="M12 3l5 7h-3l4 5h-4l3 4H7l3-4H6l4-5H7z"/><path d="M12 19v2"/>' },
+  { id:'fire',     ja:'焚き火',   en:'FIRE',     icon:'<path d="M12 3c1 3 4 4 4 8a4 4 0 0 1-8 0c0-1 .5-2 1-3 0 2 1 3 2 3 0-3-1-5 1-8z"/><path d="M8 20h8"/>' },
+  { id:'stream',   ja:'小川',     en:'STREAM',   icon:'<path d="M12 3s-5 5-5 9a5 5 0 0 0 10 0c0-4-5-9-5-9z"/>' },
+  { id:'drone',    ja:'ドローン', en:'DRONE',    icon:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/>' },
+  { id:'binaural', ja:'バイノーラル', en:'BINAURAL', icon:'<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="7" rx="1.5"/><rect x="17" y="13" width="4" height="7" rx="1.5"/>' },
+  { id:'melody',   ja:'メロディ', en:'MELODY',   icon:'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>' },
+];
+let sleepTimer = null;
+function armSleep() { clearTimeout(sleepTimer); if (settings.sound.on && settings.sound.sleep > 0) sleepTimer = setTimeout(() => { settings.sound.on = false; persist(); audio.apply(); renderSound(); toast('サウンドを止めました。おやすみなさい'); }, settings.sound.sleep * 60000); }
+function renderSound() {
+  const cur = SOUNDS.find(x => x.id === settings.sound.mode) || SOUNDS[0];
+  $('#sGrid').innerHTML = SOUNDS.map(x => `<button class="s-card ${x.id} ${x.id === settings.sound.mode ? 'active' : ''}" data-id="${x.id}" aria-label="${x.ja}"><svg viewBox="0 0 24 24">${x.icon}</svg><b>${x.ja}</b><small>${x.en}</small></button>`).join('');
+  $('#sGrid').querySelectorAll('.s-card').forEach(b => b.onclick = () => { const same = settings.sound.mode === b.dataset.id; settings.sound.mode = b.dataset.id; if (!same || !settings.sound.on) settings.sound.on = true; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); ripple.burst(2); });
+  $('#sNowJa').textContent = cur.ja; $('#sNowEn').textContent = cur.en;
+  $('#sHero').classList.toggle('on', settings.sound.on);
+  $('#sPlayIcon').innerHTML = settings.sound.on ? '<rect x="7" y="5" width="3.5" height="14" rx="1"/><rect x="13.5" y="5" width="3.5" height="14" rx="1"/>' : '<path d="M8 5v14l11-7z"/>';
+  $('#beatBox').hidden = settings.sound.mode !== 'binaural';
+  $('#beatSeg').querySelectorAll('button').forEach(b => b.classList.toggle('active', Number(b.dataset.beat) === Number(settings.sound.beat)));
+  $('#layerToggle').checked = !!settings.sound.layerWater;
+  $('#volInput').value = settings.sound.volume; $('#volPct').textContent = settings.sound.volume + '%';
+  $('#chimeToggle').checked = settings.sound.chime;
+  $('#sleepVal').textContent = settings.sound.sleep ? `${settings.sound.sleep}分` : 'オフ';
+}
+$('#sPlay').onclick = () => { settings.sound.on = !settings.sound.on; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); if (settings.sound.on) ripple.burst(2); };
+$('#beatSeg').querySelectorAll('button').forEach(b => b.onclick = () => { settings.sound.beat = Number(b.dataset.beat); persist(); audio.apply(); renderSound(); });
+$('#layerToggle').onchange = e => { settings.sound.layerWater = e.target.checked; persist(); audio.apply(); };
+$('#volInput').oninput = e => { settings.sound.volume = Number(e.target.value); $('#volPct').textContent = settings.sound.volume + '%'; persist(); audio.apply(); };
+$('#chimeToggle').onchange = e => { settings.sound.chime = e.target.checked; persist(); if (e.target.checked) audio.chime('stage'); };
+$('#sleepRow').onclick = () => { const steps = [0, 15, 30, 60]; settings.sound.sleep = steps[(steps.indexOf(settings.sound.sleep) + 1) % steps.length]; persist(); armSleep(); renderSound(); };
+// iOS needs a user gesture before any sound: create the context on the first tap so later chimes can play
+document.addEventListener('pointerdown', function first() { if (settings.sound.chime || settings.sound.on) { audio.prime(); if (settings.sound.on) { audio.apply(); armSleep(); } } document.removeEventListener('pointerdown', first); }, { once: true });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && settings.sound.on) audio.apply(); });
+renderSound();
+
+// ---------- meditation ----------
+const MED_DURS = [3, 5, 10, 15, 20, 30];
+const BREATHS = [
+  // マインドフルネス: 呼吸を観察する・整える
+  { id:'none',     kind:'mind',  label:'ガイドなし', phases:null },
+  { id:'coherent', kind:'mind',  label:'5-5',    sub:'ゆっくり', phases:[['吸う', 5], ['吐く', 5]] },
+  { id:'box',      kind:'mind',  label:'ボックス', sub:'4-4-4-4', phases:[['吸う', 4], ['止める', 4], ['吐く', 4], ['止める', 4]] },
+  // リラックス: 吐く息を長くして副交感神経を優位に
+  { id:'478',      kind:'relax', label:'4-7-8',  sub:'止める', phases:[['吸う', 4], ['止める', 7], ['吐く', 8]] },
+  { id:'4-8',      kind:'relax', label:'4-8',    sub:'', phases:[['吸う', 4], ['吐く', 8]] },
+  { id:'5-10',     kind:'relax', label:'5-10',   sub:'', phases:[['吸う', 5], ['吐く', 10]] },
+  { id:'6-12',     kind:'relax', label:'6-12',   sub:'', phases:[['吸う', 6], ['吐く', 12]] },
+  { id:'7-14',     kind:'relax', label:'7-14',   sub:'', phases:[['吸う', 7], ['吐く', 14]] },
+];
+const KIND_HINT = {
+  mind: '呼吸を変えずに観察する、あるいは一定のリズムで整える練習です。',
+  relax: '吐く息を吸う息の2倍の長さにします。長いほど落ち着きますが、苦しければ短いものから始めてください。',
+};
+let meds = load('ft.meditations', []);
+let medPref = load('ft.medPref', { min: 10, breath: 'coherent', kind: 'mind' });
+if (!medPref.kind) medPref.kind = (BREATHS.find(b => b.id === medPref.breath) || BREATHS[0]).kind;
+let medShowAll = false;
+let med = null; // { t0, paused, pausedAt, acc, dur, breath, raf, bells, lastPhase, lastCycle, wake }
+
+function renderMed() {
+  $('#medDur').innerHTML = MED_DURS.map(m => `<button class="preset ${m === medPref.min ? 'active' : ''}" data-m="${m}">${m}分</button>`).join('');
+  $('#medKind').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.k === medPref.kind));
+  const list = BREATHS.filter(b => b.kind === medPref.kind);
+  if (!list.some(b => b.id === medPref.breath)) medPref.breath = list[0].id;
+  $('#medBreath').innerHTML = list.map(b => `<button class="preset ${b.id === medPref.breath ? 'active' : ''}" data-b="${b.id}">${b.label}${b.sub ? `<small>${b.sub}</small>` : ''}</button>`).join('');
+  $('#medHint').textContent = KIND_HINT[medPref.kind];
+  { const br = BREATHS.find(b => b.id === medPref.breath); $('#breathDesc').textContent = br && br.phases ? `${br.kind === 'relax' ? 'リラックス' : 'マインドフルネス'} · ${br.label}${br.sub ? '（' + br.sub + '）' : ''}` : 'ガイドなし · ゆっくり、吸って。吐いて。'; }
+  $('#medDur').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.min = Number(b.dataset.m); save('ft.medPref', medPref); renderMed(); });
+  $('#medKind').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.kind = b.dataset.k; save('ft.medPref', medPref); renderMed(); });
+  $('#medBreath').querySelectorAll('button').forEach(b => b.onclick = () => { medPref.breath = b.dataset.b; save('ft.medPref', medPref); renderMed(); });
+  const wk = Date.now() - 7 * 86400000; const week = meds.filter(m => m.ts >= wk);
+  const total = meds.reduce((a, m) => a + m.min, 0);
+  $('#medStats').innerHTML = meds.length ? `今週 <b>${week.length}回 · ${week.reduce((a, m) => a + m.min, 0)}分</b> · これまで <b>${meds.length}回 · ${total}分</b>` : '静かに座る時間を、記録に残していきます';
+  const desc = [...meds].sort((a, b) => b.ts - a.ts); const shown = medShowAll ? desc : desc.slice(0, 5);
+  $('#medList').innerHTML = shown.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>${fmtDate(m.ts)} ${pad(new Date(m.ts).getHours())}:${pad(new Date(m.ts).getMinutes())}<span class="src">${br ? (br.kind === 'relax' ? 'リラックス' : 'マインドフルネス') + ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span></span><b>${m.min}分</b><button class="del" data-id="${m.id}" aria-label="削除">×</button></li>`; }).join('');
+  $('#medList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この瞑想の記録を削除しますか？', '削除')) { meds = meds.filter(m => m.id !== b.dataset.id); save('ft.meditations', meds); renderMed(); renderCalendar(); } });
+  const more = $('#medMore'); more.hidden = desc.length <= 5; more.textContent = medShowAll ? '閉じる' : `すべての記録 (${desc.length})`;
+  $('#medEmpty').hidden = meds.length > 0;
+}
+$('#breathCard').onclick = () => { const open = $('#breathPanel').hidden; $('#breathPanel').hidden = !open; $('#breathCard').setAttribute('aria-expanded', open); };
+$('#medMore').onclick = () => { medShowAll = !medShowAll; renderMed(); };
+const fmtMS = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`; };
+async function keepAwake() { try { if ('wakeLock' in navigator) return await navigator.wakeLock.request('screen'); } catch {} return null; }
+
+function startMed() {
+  const breath = BREATHS.find(b => b.id === medPref.breath) || BREATHS[0];
+  med = { t0: performance.now(), acc: 0, paused: false, dur: medPref.min * 60000, breath, lastPhase: -1, lastCycle: -1, wake: null, done: false };
+  audio.prime(); audio.bowl(330, 0.14, 8);
+  const ov = $('#medOverlay'); ov.hidden = false; $('#medDone').hidden = true; $('#medCtl').hidden = false; $('#breath').hidden = false; $('#medTime').hidden = false;
+  requestAnimationFrame(() => ov.classList.add('show'));
+  $('#medSub').textContent = breath.phases ? breath.label : '呼吸に意識を向けて';
+  $('#medPause').textContent = '一時停止';
+  keepAwake().then(w => { if (med) med.wake = w; });
+  ripple.burst(2);
+  med.raf = requestAnimationFrame(medFrame);
+}
+function medElapsed(now) { return med.acc + (med.paused ? 0 : now - med.t0); }
+function medFrame(now) {
+  if (!med || med.done) return;
+  med.raf = requestAnimationFrame(medFrame);
+  const e = medElapsed(now); const left = med.dur - e;
+  $('#medTime').textContent = fmtMS(left);
+  const C = $('#bC'), R = $('#bR');
+  if (med.breath.phases) {
+    const ph = med.breath.phases; const cyc = ph.reduce((a, p) => a + p[1], 0) * 1000;
+    const inCyc = e % cyc; let acc = 0, idx = 0, pos = 0;
+    for (let i = 0; i < ph.length; i++) { const len = ph[i][1] * 1000; if (inCyc < acc + len) { idx = i; pos = (inCyc - acc) / len; break; } acc += len; }
+    const [name, secs] = ph[idx];
+    // scale: inhale grows .55 -> 1, exhale shrinks 1 -> .55, hold keeps the previous size
+    let sc; if (name === '吸う') sc = 0.55 + 0.45 * ease(pos); else if (name === '吐く') sc = 1 - 0.45 * ease(pos); else sc = ph[(idx + ph.length - 1) % ph.length][0] === '吸う' ? 1 : 0.55;
+    C.style.transform = `scale(${sc})`; R.style.transform = `scale(${sc})`;
+    $('#bPhase').textContent = name; $('#bCnt').textContent = `${Math.min(secs, Math.floor(pos * secs) + 1)} / ${secs}`;
+    const cycleNo = Math.floor(e / cyc);
+    if (idx !== med.lastPhase || cycleNo !== med.lastCycle) { med.lastPhase = idx; med.lastCycle = cycleNo; if (name === '吸う') ripple.burst(1); }
+  } else {
+    const t = e / 1000; const sc = 0.72 + 0.22 * Math.sin(t * Math.PI / 6); // 12 s slow pulse
+    C.style.transform = `scale(${sc})`; R.style.transform = `scale(${sc})`; $('#bPhase').textContent = ''; $('#bCnt').textContent = '';
+  }
+  if (left <= 0) finishMed(true);
+}
+const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+function finishMed(completed) {
+  if (!med) return; med.done = true; cancelAnimationFrame(med.raf);
+  const mins = Math.round(medElapsed(performance.now()) / 60000);
+  try { med.wake && med.wake.release(); } catch {}
+  if (completed) { audio.bowl(330, 0.16, 9); setTimeout(() => audio.bowl(330, 0.14, 9), 2600); setTimeout(() => audio.bowl(330, 0.12, 9), 5200); ripple.burst(4); }
+  if (mins >= 1) { meds.push({ id: String(Date.now()), ts: Date.now(), min: mins, breath: med.breath.id, kind: med.breath.kind, completed }); save('ft.meditations', meds); renderCalendar(); }
+  $('#medCtl').hidden = true; $('#breath').hidden = true; $('#medTime').hidden = true; $('#medSub').textContent = '';
+  $('#medDone').hidden = false; $('#medDoneMsg').textContent = completed ? `${mins}分の瞑想を終えました` : (mins >= 1 ? `${mins}分の瞑想を記録しました` : '短い時間でも、座れたことに変わりはありません');
+  renderMed();
+}
+function closeMed() { const ov = $('#medOverlay'); ov.classList.remove('show'); setTimeout(() => { ov.hidden = true; }, 800); med = null; }
+$('#medStart').onclick = startMed;
+$('#medPause').onclick = () => { if (!med) return; const now = performance.now(); if (med.paused) { med.paused = false; med.t0 = now; $('#medPause').textContent = '一時停止'; } else { med.acc += now - med.t0; med.paused = true; $('#medPause').textContent = '再開'; } };
+$('#medStop').onclick = async () => { if (!med) return; const wasPaused = med.paused; if (!wasPaused) $('#medPause').click(); if (await ask('ここで終了しますか？ 1分以上なら記録に残ります。', '終了')) finishMed(false); else if (!wasPaused) $('#medPause').click(); };
+$('#medClose').onclick = closeMed;
+document.addEventListener('visibilitychange', () => { if (!document.hidden && med && !med.done) keepAwake().then(w => { if (med) med.wake = w; }); });
+renderMed();
+renderCalendar();
+
+// ---------- title screen ----------
+const TITLE_I18N = {
+  ja: { tag:'禅と、時。', copy:'自分を整える時間を、<br>日常に。', start:'はじめる', foot:'断食と瞑想を、ひとつに。' },
+  en: { tag:'Zen and time.', copy:'Make time<br>for yourself.', start:'Begin', foot:'Fasting and meditation, in one.' },
+};
+let lang = load('ft.lang', 'ja');
+function renderTitleLang() {
+  const t = TITLE_I18N[lang] || TITLE_I18N.ja;
+  $('#title').querySelectorAll('[data-i]').forEach(el => { el.innerHTML = t[el.dataset.i]; });
+  $('#langBtn').querySelectorAll('b').forEach(b => b.classList.toggle('on', b.dataset.l === lang));
+  $('#title').querySelectorAll('.t-tag,.t-copy,.t-start,.t-foot').forEach(el => el.style.letterSpacing = lang === 'en' ? '.12em' : '');
+}
+{
+  const ti = $('#title'); const welcomed = load('ft.welcomed', false);
+  ti.hidden = false; if (welcomed) ti.classList.add('quick');
+  renderTitleLang();
+  const dismiss = () => { if (ti.classList.contains('out')) return; ti.classList.add('out'); const first = !load('ft.welcomed', false); save('ft.welcomed', true); setTimeout(() => ti.remove(), 1100); if (first && !load('ft.onboarded', false)) runOnboarding(); };
+  $('#startApp').onclick = dismiss;
+  $('#langBtn').onclick = e => { e.stopPropagation(); lang = lang === 'ja' ? 'en' : 'ja'; save('ft.lang', lang); renderTitleLang(); };
+  if (welcomed) { ti.addEventListener('click', e => { if (!e.target.closest('.lang')) dismiss(); }); setTimeout(dismiss, 1900); }
+}
+
+// ---------- backup / restore ----------
+const BACKUP_KEYS = ['ft.history', 'ft.weights', 'ft.meditations', 'ft.wgoal', 'ft.medPref', 'ft.settings', 'ft.state'];
+function backupText() { const data = { app: 'ZENTOKI', version: 1, exportedAt: new Date().toISOString() }; BACKUP_KEYS.forEach(k => { const v = load(k, null); if (v !== null) data[k] = v; }); return JSON.stringify(data, null, 2); }
+function restoreFrom(text) {
+  let d; try { d = JSON.parse(text); } catch { toast('読み込めませんでした。書き出したテキストか確認してください'); return false; }
+  if (!d || d.app !== 'ZENTOKI') { toast('ZENTOKIのバックアップではないようです'); return false; }
+  const mergeById = (cur, inc) => { const ids = new Set(cur.map(x => x.id)); return cur.concat((inc || []).filter(x => x && x.id && !ids.has(x.id))); };
+  let n = 0;
+  if (Array.isArray(d['ft.history'])) { const m = mergeById(history, d['ft.history']); n += m.length - history.length; history = m; }
+  if (Array.isArray(d['ft.weights'])) { const m = mergeById(weights, d['ft.weights']); n += m.length - weights.length; weights = m; }
+  if (Array.isArray(d['ft.meditations'])) { const m = mergeById(meds, d['ft.meditations']); n += m.length - meds.length; meds = m; }
+  if (d['ft.wgoal'] && typeof d['ft.wgoal'] === 'object' && !wgoal.goal) wgoal = Object.assign(wgoal, d['ft.wgoal']);
+  if (d['ft.state'] && d['ft.state'].start && !state.start) { state.start = d['ft.state'].start; state.preset = d['ft.state'].preset || state.preset; state.customHours = d['ft.state'].customHours || state.customHours; }
+  save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist();
+  renderPresets(); renderTimer.lastIdx = -2; renderAll(); renderWeight(); renderMed(); renderCalendar(); if (state.start) startTick();
+  toast(n ? `${n}件の記録を読み込みました` : '新しい記録はありませんでした（重複は除外）');
+  return true;
+}
+$('#exportBtn').onclick = () => {
+  const blob = new Blob([backupText()], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zentoki-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+  toast('書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください');
+};
+$('#copyBtn').onclick = async () => { try { await navigator.clipboard.writeText(backupText()); toast('コピーしました。メモなどに貼り付けて保存してください'); } catch { toast('コピーできませんでした'); } };
+$('#importBtn').onclick = () => { $('#settingsDialog').close(); $('#pasteDialog').showModal(); };
+$('#pasteCancel').onclick = () => $('#pasteDialog').close();
+$('#pasteOk').onclick = () => { const t = $('#pasteArea').value.trim(); if (!t) { $('#importFile').click(); return; } if (restoreFrom(t)) { $('#pasteArea').value = ''; $('#pasteDialog').close(); } };
+$('#importFile').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (restoreFrom(await f.text())) $('#pasteDialog').close(); };
+$('#clearBtn').onclick = async () => { $('#settingsDialog').close(); if (await ask('断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。', '削除')) { history = []; weights = []; meds = []; save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); persist(); renderHistory(); renderWeight(); renderMed(); renderCalendar(); toast('削除しました'); } };
+
+// ---------- policy ----------
+const POLICY_JA = `<p><b>データについて</b><br>断食・瞑想・体重の記録と設定は、お使いの端末のブラウザ内にのみ保存されます。ZENTOKIはサーバーを持たず、記録を外部に送信することはありません。アカウント登録も不要です。</p>
+<p><b>バックアップ</b><br>端末やブラウザのデータを消すと記録も消えます。設定の「バックアップ」から書き出したものは、ご自身で保管してください。</p>
+<p><b>ヘルスケアの取り込み</b><br>iPhoneのヘルスケアから書き出したファイルは、端末内で体重の記録だけを読み取ります。ファイルの内容が外部に送られることはありません。</p>
+<p><b>通知・音</b><br>通知は端末の許可に基づいて表示します。音はアプリ内で生成しており、音源ファイルの取得はありません。</p>
+<p><b>医療に関する注意</b><br>ZENTOKIは医療機器ではなく、診断や治療、医療的助言を行うものではありません。「体の変化」の表示は一般的な目安です。持病のある方、妊娠中・授乳中の方、未成年の方、体調に不安のある方は、断食を始める前に医師にご相談ください。バイノーラルビートは光や音の刺激に敏感な方、てんかんの既往がある方は使用をお控えください。</p>
+<p><b>免責</b><br>本アプリの利用により生じたいかなる損害についても、開発者は責任を負いかねます。体調が優れないときは無理をせず中止してください。</p>
+<p><b>フォント</b><br>文字の表示にGoogle Fontsを利用しており、ブラウザからGoogleへフォントの取得リクエストが送られます。</p>`;
+$('#policyBtn').onclick = () => { $('#policyBody').innerHTML = POLICY_JA; $('#policyDialog').showModal(); };
+$('#policyClose').onclick = () => $('#policyDialog').close();
+
+// ---------- onboarding (first launch only) ----------
+const OB = [
+  { ico:'<circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 12l4-2"/>', t:'断食', p:'プランを選んで「断食をはじめる」。<br>リングが時間の流れを映し、<br>体の変化を静かに知らせます。' },
+  { ico:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>', t:'瞑想', p:'時間と呼吸法を選ぶだけ。<br>円の広がりに合わせて、<br>ゆっくり吸って、吐いて。' },
+  { ico:'<path d="M5 20V10M12 20V4M19 20v-8"/>', t:'記録', p:'続いた日も、休んだ日も。<br>カレンダーで静かに<br>ふりかえることができます。' },
+];
+function runOnboarding() {
+  const ob = $('#onboard'); let i = 0; ob.hidden = false;
+  const draw = () => { const o = OB[i]; $('#obCard').innerHTML = `<div class="ob-ico"><svg viewBox="0 0 24 24">${o.ico}</svg></div><h2>${o.t}</h2><p>${o.p}</p>`; $('#obCard').style.animation = 'none'; void $('#obCard').offsetWidth; $('#obCard').style.animation = ''; $('#obDots').innerHTML = OB.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join(''); $('#obNext').textContent = i === OB.length - 1 ? 'はじめる' : '次へ'; };
+  const end = () => { save('ft.onboarded', true); ob.classList.add('out'); setTimeout(() => ob.remove(), 900); };
+  $('#obNext').onclick = () => { if (i < OB.length - 1) { i++; draw(); } else end(); };
+  $('#obSkip').onclick = end;
+  draw();
+}
+
+// ---------- tabs ----------
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === id));
+  document.querySelectorAll('.view.active .rule').forEach(r => { r.style.animation = 'none'; void r.offsetWidth; r.style.animation = ''; });
+  save('ft.tab', id); window.scrollTo({ top: 0 });
+  if (id === 'viewLog') { renderHistory(); renderWeight(); renderMed(); }
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => showView(t.dataset.view));
+showView(load('ft.tab', 'viewHome'));
+
+// ---------- init ----------
+renderPresets();
+renderTimer.lastIdx = -2;
+renderAll();
+renderWeight();
+if (state.start) startTick(); else tick = setInterval(renderEating, 1000);
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+</script>
+</body>
+</html>
