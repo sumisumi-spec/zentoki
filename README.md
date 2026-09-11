@@ -44,6 +44,8 @@ python3 -m http.server 8080
 `index.html` を直接ダブルクリックしても動きます（その場合 Service Worker は無効）。
 
 公開版: https://sumisumi-spec.github.io/zentoki/
+
+iOS アプリ版のビルド手順は [docs/IOS_RELEASE.md](docs/IOS_RELEASE.md) を参照。
 スマホでは「ホーム画面に追加」でアプリのように使えます。
 
 データはすべてブラウザの localStorage に保存され、外部には送信されません。

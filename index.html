@@ -610,7 +610,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
   <h3>設定</h3>
   <label class="toggle"><span>目標達成を通知</span><input type="checkbox" id="notifyToggle"><span class="sw"></span></label>
   <label class="toggle"><span>ステージ到達を通知</span><input type="checkbox" id="stageNotifyToggle"><span class="sw"></span></label>
-  <p class="hint" style="margin-top:6px">通知はZENTOKIを開いている間（ホーム画面に追加したアプリを含む）に届きます。iPhoneでは「ホーム画面に追加」したアプリからのみ通知できます。</p>
+  <p class="hint" id="notifyHint" style="margin-top:6px">通知はZENTOKIを開いている間（ホーム画面に追加したアプリを含む）に届きます。iPhoneでは「ホーム画面に追加」したアプリからのみ通知できます。</p>
   <label class="toggle"><span>背景の波紋</span><input type="checkbox" id="rippleToggle"><span class="sw"></span></label>
   <h3 style="margin-top:22px">バックアップ</h3>
   <div class="row" style="margin-top:0"><button id="exportBtn">書き出す</button><button id="copyBtn">テキストをコピー</button></div>
@@ -850,6 +850,33 @@ function streak() {
 
 function renderAll() { renderTimer(); renderEating(); renderHistory(); }
 
+// ---------- native bridge (Capacitor iOS/Android) ----------
+// When running inside the native app, notifications are scheduled at their exact times so they arrive even when the app is closed.
+const native = (() => {
+  const C = window.Capacitor; if (!C || !C.isNativePlatform || !C.isNativePlatform()) return null;
+  const P = C.Plugins || {};
+  const LN = P.LocalNotifications, SB = P.StatusBar, KA = P.KeepAwake, HP = P.Haptics, SS = P.SplashScreen;
+  try { SB && SB.setStyle && SB.setStyle({ style: 'DARK' }); } catch {}
+  try { SS && SS.hide && SS.hide(); } catch {}
+  const ids = { goal: 1001, stage: 1100 };
+  async function perm() { if (!LN) return false; try { let r = await LN.checkPermissions(); if (r.display !== 'granted') r = await LN.requestPermissions(); return r.display === 'granted'; } catch { return false; } }
+  async function cancelFast() { if (!LN) return; try { const pend = await LN.getPending(); const mine = (pend.notifications || []).filter(n => n.id >= 1000 && n.id < 1200); if (mine.length) await LN.cancel({ notifications: mine.map(n => ({ id: n.id })) }); } catch {} }
+  async function scheduleFast() {
+    if (!LN || !state.start) return; await cancelFast();
+    if (!settings.notify && !settings.stageNotify) return;
+    if (!(await perm())) return;
+    const now = Date.now(); const list = [];
+    if (settings.notify) { const at = state.start + goalMs(); if (at > now + 5000) list.push({ id: ids.goal, title: '目標達成', body: `${goalHours()}時間の断食を達成しました。おつかれさま。`, schedule: { at: new Date(at) }, sound: 'default' }); }
+    if (settings.stageNotify) STAGES.forEach((st, i) => { if (st.h <= 0) return; const at = state.start + st.h * H; if (at > now + 5000 && at < state.start + goalMs()) list.push({ id: ids.stage + i, title: st.t, body: `${st.h}時間経過。${st.d}`, schedule: { at: new Date(at) }, sound: 'default' }); });
+    if (list.length) { try { await LN.schedule({ notifications: list }); } catch {} }
+  }
+  return {
+    scheduleFast, cancelFast, perm,
+    keepAwake(on) { try { if (!KA) return; on ? KA.keepAwake() : KA.allowSleep(); } catch {} },
+    haptic(kind) { try { if (!HP) return; kind === 'goal' ? HP.notification({ type: 'SUCCESS' }) : HP.impact({ style: 'LIGHT' }); } catch {} },
+  };
+})();
+
 // in-app confirm (native confirm() is blocked inside sandboxed viewers such as claude.ai)
 function ask(msg, okLabel = 'OK', title = '確認') {
   return new Promise(res => {
@@ -868,6 +895,7 @@ function startFast(ts = Date.now()) {
   state.start = Math.min(ts, Date.now());
   markPassed();
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); startTick();
+  if (native) native.scheduleFast();
   toast(Date.now() - state.start > 60000 ? `${fmtHM(Date.now() - state.start)}前からの断食として開始` : `${goalHours()}時間の断食を開始`); ripple.burst(3); audio.chime('start');
 }
 
@@ -877,12 +905,13 @@ async function endFast() {
   if (dur < 30 * 60000) {
     if (!(await ask('まだ30分たっていません。記録を残さずに取り消しますか？（続ける場合はキャンセル）', '取り消す'))) return;
     if (!state.start) return;
-    state.start = null; notified = { goal:false, stages:[] }; persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); toast('取り消しました'); return;
+    state.start = null; notified = { goal:false, stages:[] }; persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); toast('取り消しました'); if (native) native.cancelFast(); return;
   }
   if (!ok && !(await ask(`目標まであと${fmtHM(goalMs() - dur)}です。ここで終了しますか？ 記録は残ります。`, '終了する'))) return;
   if (!state.start) return;
   history.push({ id: String(Date.now()), start: state.start, end: Date.now(), goal: goalHours(), preset: state.preset });
   state.lastEnd = Date.now(); state.lastEat = eatHours(); state.start = null; notified = { goal:false, stages:[] };
+  if (native) native.cancelFast();
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll();
   toast(ok ? `目標達成 · ${fmtHM(dur)}を記録しました` : `${fmtHM(dur)}の断食を記録しました。おつかれさま`); ripple.burst(ok ? 4 : 2); audio.chime(ok ? 'goal' : 'end');
 }
@@ -893,11 +922,13 @@ function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.ad
 
 // ---------- notifications ----------
 async function ensurePermission() {
+  if (native) { const ok = await native.perm(); if (!ok) toast('通知が許可されていません。設定アプリで ZENTOKI の通知をオンにしてください'); return ok; }
   if (!('Notification' in window)) { toast('この端末は通知に対応していません'); return false; }
   if (Notification.permission === 'granted') return true;
   return (await Notification.requestPermission()) === 'granted';
 }
 function notify(title, body) {
+  if (native) return;
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   const opts = { body, icon: 'icon-192.png', badge: 'icon-192.png', tag: 'zentoki-' + title, silent: false };
   // Android Chrome and home-screen PWAs only allow notifications through the service worker
@@ -1160,7 +1191,7 @@ const audio = (() => {
     const t = ctx.currentTime + 0.02;
     const seq = { start: [[440, 0], [659.25, 0.18]], end: [[659.25, 0], [440, 0.2]], goal: [[440, 0], [554.37, 0.16], [659.25, 0.32], [880, 0.5]], stage: [[523.25, 0]] }[kind] || [[523.25, 0]];
     seq.forEach(([f, d]) => bell(f, t + d, 2.8, 0.1));
-    if (navigator.vibrate) try { navigator.vibrate(kind === 'goal' ? [30, 60, 30] : 20); } catch {}
+    if (native) native.haptic(kind); else if (navigator.vibrate) try { navigator.vibrate(kind === 'goal' ? [30, 60, 30] : 20); } catch {}
   }
   return {
     apply() { if (settings.sound.on) startAmb(settings.sound.mode); else if (ctx) stopAmb(); if (master) master.gain.setTargetAtTime(vol(), ctx.currentTime, 0.05); },
@@ -1253,12 +1284,12 @@ $('#startCancel').onclick = () => $('#startDialog').close();
 $('#startOk').onclick = () => {
   const v = new Date($('#startInput').value).getTime();
   if (!v || v > Date.now()) { toast('未来の時刻は指定できません'); return; }
-  state.start = v; notified = { goal:false, stages:[] }; persist(); renderTimer.lastIdx = -2; renderAll(); $('#startDialog').close();
+  state.start = v; markPassed(); persist(); renderTimer.lastIdx = -2; renderAll(); $('#startDialog').close(); if (native) native.scheduleFast();
 };
 $('#settingsBtn').onclick = () => { $('#notifyToggle').checked = settings.notify; $('#stageNotifyToggle').checked = settings.stageNotify; $('#rippleToggle').checked = settings.ripple; $('#settingsDialog').showModal(); };
 $('#settingsClose').onclick = () => $('#settingsDialog').close();
-$('#notifyToggle').onchange = async e => { settings.notify = e.target.checked && await ensurePermission(); e.target.checked = settings.notify; persist(); };
-$('#stageNotifyToggle').onchange = async e => { settings.stageNotify = e.target.checked && await ensurePermission(); e.target.checked = settings.stageNotify; persist(); };
+$('#notifyToggle').onchange = async e => { settings.notify = e.target.checked && await ensurePermission(); e.target.checked = settings.notify; persist(); if (native) native.scheduleFast(); };
+$('#stageNotifyToggle').onchange = async e => { settings.stageNotify = e.target.checked && await ensurePermission(); e.target.checked = settings.stageNotify; persist(); if (native) native.scheduleFast(); };
 $('#rippleToggle').onchange = e => { settings.ripple = e.target.checked; persist(); ripple.set(settings.ripple); };
 document.addEventListener('visibilitychange', () => { if (!document.hidden) renderAll(); });
 
@@ -1547,7 +1578,7 @@ function renderMed() {
 $('#breathCard').onclick = () => { const open = $('#breathPanel').hidden; $('#breathPanel').hidden = !open; $('#breathCard').setAttribute('aria-expanded', open); };
 $('#medMore').onclick = () => { medShowAll = !medShowAll; renderMed(); };
 const fmtMS = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${pad(Math.floor(s / 60))}:${pad(s % 60)}`; };
-async function keepAwake() { try { if ('wakeLock' in navigator) return await navigator.wakeLock.request('screen'); } catch {} return null; }
+async function keepAwake() { if (native) { native.keepAwake(true); return { release() { native.keepAwake(false); } }; } try { if ('wakeLock' in navigator) return await navigator.wakeLock.request('screen'); } catch {} return null; }
 
 function startMed() {
   const breath = BREATHS.find(b => b.id === medPref.breath) || BREATHS[0];
@@ -1650,6 +1681,7 @@ function restoreFrom(text) {
   const stt = d['ft.state']; if (stt && typeof stt === 'object' && num(stt.start, y2000, now) && !state.start) { state.start = stt.start; if (PRESETS.some(p => p.id === stt.preset)) state.preset = stt.preset; if (num(stt.customHours, 1, 120)) state.customHours = stt.customHours; markPassed(); }
   save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist();
   renderPresets(); renderTimer.lastIdx = -2; renderAll(); renderWeight(); renderMed(); renderCalendar(); renderSound(); ripple.set(settings.ripple); if (state.start) startTick();
+  if (native) native.scheduleFast();
   toast(n ? `${n}件の記録を読み込みました` : '新しい記録はありませんでした（重複は除外）');
   return true;
 }
@@ -1691,6 +1723,8 @@ function runOnboarding() {
   draw();
 }
 
+if (native) { $('#notifyHint').textContent = '通知はアプリを閉じていても、目標やステージの時刻に届きます。'; }
+
 // ---------- tabs ----------
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === id));
@@ -1708,7 +1742,7 @@ renderTimer.lastIdx = -2;
 renderAll();
 renderWeight();
 if (state.start) startTick(); else tick = setInterval(renderEating, 1000);
-if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+if (!native && 'serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
 </script>
 </body>
