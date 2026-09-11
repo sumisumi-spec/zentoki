@@ -13,7 +13,9 @@
 <meta property="og:title" content="ZENTOKI｜断食・瞑想タイマー">
 <meta property="og:description" content="自分を整える時間を、日常に。断食と瞑想を、ひとつのアプリで。">
 <meta property="og:type" content="website">
-<meta property="og:image" content="og.png">
+<meta property="og:url" content="https://sumisumi-spec.github.io/zentoki/">
+<meta property="og:image" content="https://sumisumi-spec.github.io/zentoki/og.png">
+<meta name="twitter:image" content="https://sumisumi-spec.github.io/zentoki/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Shippori+Mincho:wght@400;500&display=swap">
@@ -24,7 +26,7 @@
 :root{
   color-scheme:dark;
   --bg:#000;
-  --ink:#f5f5f7; --ink2:rgba(255,255,255,.6); --ink3:rgba(255,255,255,.36); --ink4:rgba(255,255,255,.16);
+  --ink:#f5f5f7; --ink2:rgba(255,255,255,.66); --ink3:rgba(255,255,255,.55); --ink4:rgba(255,255,255,.32);
   --line:rgba(255,255,255,.1); --fill:rgba(255,255,255,.05);
   --ease:cubic-bezier(.2,.7,.2,1);
   --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",Georgia,serif;
@@ -81,7 +83,7 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .remain small{font-size:15px;color:var(--ink2);margin-right:10px;letter-spacing:.14em}
 .times{display:flex;justify-content:center;gap:28px;margin-top:12px;font-size:12px;color:var(--ink3);letter-spacing:.08em}
 .times b{font-weight:300;color:var(--ink2);margin-left:6px}
-.times button{color:var(--ink3);border-bottom:1px solid var(--ink4);margin-left:8px;font-size:11px}
+.times button{color:var(--ink3);text-decoration:underline;text-underline-offset:3px;margin-left:4px;font-size:12px;padding:14px 10px;margin-top:-14px;margin-bottom:-14px}
 .pill-lg{display:block;width:100%;margin-top:18px;padding:16px;border-radius:999px;border:1px solid rgba(255,255,255,.85);color:#fff;font-size:15px;letter-spacing:.2em;padding-left:calc(16px + .2em);transition:.25s var(--ease);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .pill-lg:hover{background:#fff;color:#000}
 .pill-lg:active{transform:scale(.985)}
@@ -129,7 +131,7 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 @keyframes breathe{0%,100%{transform:scale(.78);opacity:.7}50%{transform:scale(1);opacity:1}}
 .bcard b{display:block;font-size:17px;font-weight:300;letter-spacing:.1em}
 .bcard small{display:block;font-size:12px;color:var(--ink3);letter-spacing:.1em;margin-top:6px}
-.bcard .chev{width:8px;height:8px;border-right:1px solid var(--ink3);border-bottom:1px solid var(--ink3);transform:rotate(45deg);transition:transform .3s}
+.bcard .chev{width:8px;height:8px;margin-right:4px;border-right:1px solid var(--ink3);border-bottom:1px solid var(--ink3);transform:rotate(45deg);transition:transform .3s}
 .bcard[aria-expanded="true"] .chev{transform:rotate(-135deg)}
 #breathPanel{padding:6px 0 4px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
@@ -166,7 +168,7 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .s-card>*{position:relative;z-index:1}
 .s-card.active{border-color:#fff;box-shadow:0 0 22px rgba(255,255,255,.18)}
 .s-card svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round;margin-bottom:10px}
-.s-card b{font-size:22px;font-weight:300;letter-spacing:.14em}
+.s-card b{font-size:20px;font-weight:300;letter-spacing:.08em;white-space:nowrap}
 .s-card small{font-family:var(--geo);font-size:11px;letter-spacing:.3em;color:var(--ink2);margin-top:6px}
 /* card textures (monochrome, animated) */
 .s-card.rain::before{background:repeating-linear-gradient(100deg,transparent 0 9px,rgba(255,255,255,.07) 9px 10px),radial-gradient(circle at 30% 30%,rgba(255,255,255,.08),transparent 40%);background-size:100% 100%,100% 100%;animation:rain 9s linear infinite}
@@ -253,10 +255,10 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .history .dur:not(.ok){color:var(--ink2)}
 .history .info{min-width:0;font-size:12px;color:var(--ink3);line-height:1.6}
 .history .info b{display:block;font-weight:400;color:var(--ink2);font-size:13px}
-.history .del,.w-list .del{color:var(--ink4);width:32px;height:32px;display:grid;place-items:center;font-size:16px;transition:color .2s}
+.history .del,.w-list .del{color:var(--ink4);width:44px;height:44px;margin-right:-10px;display:grid;place-items:center;font-size:18px;transition:color .2s}
 .history .del:hover,.w-list .del:hover{color:var(--ink)}
 .empty{color:var(--ink3);font-size:12px;letter-spacing:.06em;padding:8px 0 0}
-.w-more{margin-top:12px;font-size:11px;letter-spacing:.2em;color:var(--ink3)}
+.w-more{margin-top:8px;font-size:12px;letter-spacing:.2em;color:var(--ink3);padding:14px 8px;margin-left:-8px;min-height:44px}
 .w-list{list-style:none;margin:14px 0 0;padding:0}
 .w-list li{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:14px;padding:11px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink3)}
 .w-list li b{font-weight:300;font-size:16px;color:var(--ink)}
@@ -271,7 +273,7 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 .w-bar i{position:absolute;left:0;top:0;height:1px;background:#fff;transition:width .6s var(--ease)}
 .w-bar i::after{content:"";position:absolute;right:-3px;top:-3px;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.6)}
 .w-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);letter-spacing:.06em}
-.w-meta button{color:var(--ink3);border-bottom:1px solid var(--ink4)}
+.w-meta button{color:var(--ink3);text-decoration:underline;text-underline-offset:3px;padding:15px 8px;margin:-15px -8px}
 .w-actions{display:flex;gap:10px;margin-top:20px}
 .ghost{flex:1;padding:12px;border-radius:999px;border:1px solid var(--line);color:var(--ink2);font-size:13px;letter-spacing:.08em;transition:.2s;text-align:center}
 .ghost:hover{border-color:rgba(255,255,255,.5);color:#fff}
@@ -307,7 +309,7 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 @keyframes eq{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
 
 /* meditation overlay */
-#medOverlay{position:fixed;inset:0;z-index:6;background:rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;transition:opacity .8s var(--ease)}
+#medOverlay{position:fixed;inset:0;z-index:6;background:rgba(0,0,0,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;transition:opacity .8s var(--ease)}
 #medOverlay.show{opacity:1}
 .breath{position:relative;width:min(240px,64vw);aspect-ratio:1;display:grid;place-items:center}
 .breath .o{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,.22)}
@@ -328,7 +330,7 @@ header h1{font-family:var(--geo);font-size:15px;letter-spacing:.34em;color:var(-
 /* title screen */
 #title{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:opacity 1s var(--ease);color:#fff}
 #title.out{opacity:0;pointer-events:none}
-#title .lang{position:absolute;top:calc(22px + env(safe-area-inset-top));right:26px;font-family:var(--geo);font-size:13px;letter-spacing:.24em;color:var(--ink3);z-index:2}
+#title .lang{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;padding:15px 14px;font-family:var(--geo);font-size:13px;letter-spacing:.24em;color:var(--ink3);z-index:2}
 #title .lang b{font-weight:300;color:var(--ink2);transition:color .3s}
 #title .lang b.on{color:#fff}
 .t-ring{position:relative;width:min(250px,64vw);aspect-ratio:1;display:grid;place-items:center;margin-top:2vh}
@@ -381,7 +383,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 .about .sub{font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.04em}
 .about .ver{font-family:var(--geo);font-size:10px;color:var(--ink4);margin-top:10px;letter-spacing:.14em}
 .note{font-size:11px;color:var(--ink3);line-height:1.7;margin-top:18px}
-.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + 12px);transform:translateX(-50%) translateY(16px);background:#fff;color:#000;padding:11px 18px;border-radius:999px;font-size:13px;opacity:0;transition:.3s var(--ease);pointer-events:none;z-index:9;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabs) + 12px);transform:translateX(-50%) translateY(16px);background:#fff;color:#000;padding:11px 18px;border-radius:22px;font-size:13px;line-height:1.5;opacity:0;transition:.3s var(--ease);pointer-events:none;z-index:9;text-align:center;width:max-content;max-width:min(88vw,420px)}
 .toast.show{opacity:1;transform:translateX(-50%)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}.t-ring,.t-copy,.t-start,.t-foot{opacity:1;transform:none}.rule{transform:none}}
 </style>
@@ -529,7 +531,8 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
     <div class="cal-day" id="calDay"></div>
     <ul class="history" id="history" hidden></ul>
     <div class="empty" id="historyEmpty" hidden>まだ記録がありません</div>
-    <button class="w-more" id="histToggle">すべての断食の記録</button>
+    <button class="w-more" id="histMore" hidden>さらに表示</button>
+  <button class="w-more" id="histToggle">すべての断食の記録</button>
   </section>
 
   <section class="blk">
@@ -567,7 +570,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
   <button class="tab" data-view="viewLog"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-8"/></svg>記録</button>
 </div></nav>
 
-<div id="medOverlay" hidden>
+<div id="medOverlay" role="dialog" aria-modal="true" aria-label="瞑想" hidden>
   <div class="breath" id="breath">
     <div class="o"></div><div class="c" id="bC"></div><div class="r" id="bR"></div>
     <div class="txt"><div class="phase" id="bPhase"></div><div class="cnt" id="bCnt"></div></div>
@@ -603,13 +606,14 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 </dialog>
 
 <dialog id="settingsDialog">
-  <div class="about"><div class="wm">ZENTOKI</div><div class="copy">自分を整える時間を、日常に。</div><div class="sub">断食と瞑想を、ひとつのアプリで。</div><div class="ver">VERSION 1.2</div></div>
+  <div class="about"><div class="wm">ZENTOKI</div><div class="copy">自分を整える時間を、日常に。</div><div class="sub">断食と瞑想を、ひとつのアプリで。</div><div class="ver">VERSION 1.3</div></div>
   <h3>設定</h3>
   <label class="toggle"><span>目標達成を通知</span><input type="checkbox" id="notifyToggle"><span class="sw"></span></label>
   <label class="toggle"><span>ステージ到達を通知</span><input type="checkbox" id="stageNotifyToggle"><span class="sw"></span></label>
+  <p class="hint" style="margin-top:6px">通知はZENTOKIを開いている間（ホーム画面に追加したアプリを含む）に届きます。iPhoneでは「ホーム画面に追加」したアプリからのみ通知できます。</p>
   <label class="toggle"><span>背景の波紋</span><input type="checkbox" id="rippleToggle"><span class="sw"></span></label>
   <h3 style="margin-top:22px">バックアップ</h3>
-  <div class="row" style="margin-top:0"><button id="exportBtn">ファイルに書き出し</button><button id="copyBtn">テキストをコピー</button></div>
+  <div class="row" style="margin-top:0"><button id="exportBtn">書き出す</button><button id="copyBtn">テキストをコピー</button></div>
   <div class="row"><button id="importBtn">読み込む</button><button class="danger" id="clearBtn">すべて削除</button></div>
   <input type="file" id="importFile" accept=".json,application/json,text/plain" class="sr">
   <p class="hint">記録はこの端末の中にだけ保存されます。機種変更やブラウザのデータ削除に備えて、ときどき書き出しておくと安心です。</p>
@@ -666,6 +670,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const H = 3600000;
 const PRESETS = [
   {id:'12:12', fast:12, eat:12, label:'12:12', sub:'はじめて'},
@@ -773,9 +778,8 @@ function renderTimer() {
   const goal = goalMs();
   const ratio = Math.min(1, elapsed / goal);
   bar.style.strokeDashoffset = circ * (1 - ratio);
-  const tp = tipAt(ratio); tip.hidden = false; tip.setAttribute('cx', tp.x.toFixed(2)); tip.setAttribute('cy', tp.y.toFixed(2));
-  // svg is rotated -90deg, so the tip is placed in un-rotated coordinates starting from the right; compensate
-  const tp2 = tipAt(ratio + 0.25); tip.setAttribute('cx', tp2.x.toFixed(2)); tip.setAttribute('cy', tp2.y.toFixed(2));
+  // the svg is rotated -90deg by CSS, so place the tip a quarter turn ahead in un-rotated coordinates
+  tip.hidden = false; const tp2 = tipAt(ratio + 0.25); tip.setAttribute('cx', tp2.x.toFixed(2)); tip.setAttribute('cy', tp2.y.toFixed(2));
   $('#ringLabel').textContent = elapsed >= goal ? '目標達成' : '経過時間';
   $('#ringTime').textContent = fmtDur(elapsed);
   $('#ringSub').textContent = `目標 ${goalHours()}時間`;
@@ -800,15 +804,17 @@ function renderEating() {
   $('#eatingUntil').textContent = fmtTime(until);
 }
 
+let histShown = 30;
 function renderHistory() {
   const list = $('#history');
   const sorted = [...history].sort((a, b) => b.end - a.end);
-  list.innerHTML = sorted.slice(0, 30).map(r => {
+  list.innerHTML = sorted.slice(0, histShown).map(r => {
     const dur = r.end - r.start;
     const ok = dur >= r.goal * H;
-    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · 早めに終了'}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${r.goal}h</div><button class="del" data-id="${r.id}" aria-label="削除">×</button></li>`;
+    return `<li><div class="dur ${ok ? 'ok' : ''}">${fmtH(dur)}</div><div class="info"><b>${fmtDate(r.end)}${ok ? '' : ' · 早めに終了'}</b>${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h</div><button class="del" data-id="${esc(r.id)}" aria-label="削除">×</button></li>`;
   }).join('');
   $('#historyEmpty').hidden = list.hidden || history.length > 0;
+  $('#histMore').hidden = list.hidden || history.length <= histShown; $('#histMore').textContent = `さらに表示（残り${Math.max(0, history.length - histShown)}件）`;
   list.querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この記録を削除しますか？', '削除')) { history = history.filter(r => r.id !== b.dataset.id); persist(); renderHistory(); } });
 
   $('#stTotal').textContent = history.length;
@@ -857,9 +863,10 @@ function ask(msg, okLabel = 'OK', title = '確認') {
 // ---------- actions ----------
 function persist() { save('ft.state', state); save('ft.history', history); save('ft.settings', settings); save('ft.notified', notified); }
 
+function markPassed() { const el = Date.now() - state.start; notified = { goal: el >= goalMs(), stages: STAGES.filter(s => s.h > 0 && el >= s.h * H).map(s => s.h) }; }
 function startFast(ts = Date.now()) {
   state.start = Math.min(ts, Date.now());
-  notified = { goal:false, stages:[] };
+  markPassed();
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); startTick();
   toast(Date.now() - state.start > 60000 ? `${fmtHM(Date.now() - state.start)}前からの断食として開始` : `${goalHours()}時間の断食を開始`); ripple.burst(3); audio.chime('start');
 }
@@ -867,10 +874,15 @@ function startFast(ts = Date.now()) {
 async function endFast() {
   const dur = Date.now() - state.start;
   const ok = dur >= goalMs();
+  if (dur < 30 * 60000) {
+    if (!(await ask('まだ30分たっていません。記録を残さずに取り消しますか？（続ける場合はキャンセル）', '取り消す'))) return;
+    if (!state.start) return;
+    state.start = null; notified = { goal:false, stages:[] }; persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll(); toast('取り消しました'); return;
+  }
   if (!ok && !(await ask(`目標まであと${fmtHM(goalMs() - dur)}です。ここで終了しますか？ 記録は残ります。`, '終了する'))) return;
   if (!state.start) return;
   history.push({ id: String(Date.now()), start: state.start, end: Date.now(), goal: goalHours(), preset: state.preset });
-  state.lastEnd = Date.now(); state.lastEat = eatHours(); state.start = null;
+  state.lastEnd = Date.now(); state.lastEat = eatHours(); state.start = null; notified = { goal:false, stages:[] };
   persist(); renderPresets(); renderTimer.lastIdx = -2; renderAll();
   toast(ok ? `目標達成 · ${fmtHM(dur)}を記録しました` : `${fmtHM(dur)}の断食を記録しました。おつかれさま`); ripple.burst(ok ? 4 : 2); audio.chime(ok ? 'goal' : 'end');
 }
@@ -887,7 +899,10 @@ async function ensurePermission() {
 }
 function notify(title, body) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  try { new Notification(title, { body, icon: 'icon.svg' }); } catch {}
+  const opts = { body, icon: 'icon-192.png', badge: 'icon-192.png', tag: 'zentoki-' + title, silent: false };
+  // Android Chrome and home-screen PWAs only allow notifications through the service worker
+  if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistration().then(reg => { if (reg) return reg.showNotification(title, opts); throw new Error('no sw'); }).catch(() => { try { new Notification(title, opts); } catch {} });
+  else { try { new Notification(title, opts); } catch {} }
 }
 function checkNotifications(elapsed, goal) {
   let changed = false;
@@ -1161,7 +1176,7 @@ const ripple = (() => {
   let W = 0, Hh = 0, dpr = 1, waves = [], nextAt = 0, raf = null, enabled = settings.ripple;
   const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; Hh = innerHeight; cv.width = W * dpr; cv.height = Hh * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); };
   addEventListener('resize', resize); resize();
-  const origin = () => { const r = ($('.view.active .ring') || $('#homeRing')).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, r0: r.width / 2 }; };
+  const origin = () => { const el = $('.view.active .ring'); const r = el ? el.getBoundingClientRect() : null; if (!r || r.width < 1) return { x: W / 2, y: Hh * 0.42, r0: 0 }; return { x: r.left + r.width / 2, y: r.top + r.height / 2, r0: r.width / 2 }; };
   const maxR = () => Math.hypot(W, Hh) * 0.72;
   const spawn = (strength = 1, attack = 0.2) => { waves.push({ born: performance.now(), strength, attack }); if (waves.length > 10) waves.shift(); };
   const interval = () => state.start ? 2800 : 4400;
@@ -1290,15 +1305,16 @@ function renderCalDay() {
   if (!calSel) { box.innerHTML = '<div class="t"><span>日付をタップすると、その日の記録が見られます</span></div>'; return; }
   const recs = dayRecords(calSel); const ms = hoursOn(calSel); const md = dayMeds(calSel);
   let html = `<div class="t"><span>${calSel.getMonth() + 1}月${calSel.getDate()}日 ${DAYS[calSel.getDay()]}</span><span>${ms ? '断食 ' + fmtHM(ms) : ''}${md.length ? (ms ? ' · ' : '') + '瞑想 ' + md.reduce((a, m) => a + m.min, 0) + '分' : ''}</span></div>`;
-  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>断食 ${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${r.goal}h${ok ? '' : ' · 早めに終了'}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
+  if (recs.length) html += `<ul>${recs.map(r => { const dur = r.end - r.start; const ok = dur >= r.goal * H; return `<li><span>断食 ${fmtTime(r.start)} – ${fmtTime(r.end)} · 目標 ${esc(r.goal)}h${ok ? '' : ' · 早めに終了'}</span><b>${fmtH(dur)}</b></li>`; }).join('')}</ul>`;
   else if (ms) html += `<div>別の日に終了した断食の時間です</div>`;
-  if (md.length) html += `<ul>${md.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>瞑想 ${fmtTime(m.ts)}${br ? ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span><b>${m.min}分</b></li>`; }).join('')}</ul>`;
+  if (md.length) html += `<ul>${md.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>瞑想 ${fmtTime(m.ts)}${br ? ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span><b>${esc(m.min)}分</b></li>`; }).join('')}</ul>`;
   if (!recs.length && !ms && !md.length) html += `<div>この日は記録がありません</div>`;
   box.innerHTML = html;
 }
 $('#calPrev').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCalendar(); };
 $('#calNext').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCalendar(); };
-$('#histToggle').onclick = () => { const h = $('#history'); const open = h.hidden; h.hidden = !open; $('#historyEmpty').hidden = !open || history.length > 0; $('#histToggle').textContent = open ? '閉じる' : 'すべての断食の記録'; };
+$('#histToggle').onclick = () => { const h = $('#history'); const open = h.hidden; h.hidden = !open; histShown = 30; renderHistory(); $('#histToggle').textContent = open ? '閉じる' : 'すべての断食の記録'; };
+$('#histMore').onclick = () => { histShown += 30; renderHistory(); };
 
 // ---------- weight ----------
 let weights = load('ft.weights', []);        // {id, ts, kg, src}
@@ -1341,7 +1357,7 @@ function renderWeight() {
   } else { $('#bmi').hidden = true; }
   const desc = [...list].reverse();
   const shown = wShowAll ? desc : desc.slice(0, 5);
-  $('#wList').innerHTML = shown.map(w => `<li><span>${fmtDate(w.ts)} ${pad(new Date(w.ts).getHours())}:${pad(new Date(w.ts).getMinutes())}${w.src === 'health' ? '<span class="src">HEALTH</span>' : ''}</span><b>${fmtKg(w.kg)}</b><button class="del" data-id="${w.id}" aria-label="削除">×</button></li>`).join('');
+  $('#wList').innerHTML = shown.map(w => `<li><span>${fmtDate(w.ts)} ${pad(new Date(w.ts).getHours())}:${pad(new Date(w.ts).getMinutes())}${w.src === 'health' ? '<span class="src">HEALTH</span>' : ''}</span><b>${fmtKg(w.kg)}</b><button class="del" data-id="${esc(w.id)}" aria-label="削除">×</button></li>`).join('');
   $('#wList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この記録を削除しますか？', '削除')) { weights = weights.filter(w => w.id !== b.dataset.id); save('ft.weights', weights); renderWeight(); } });
   const more = $('#wMore'); more.hidden = desc.length <= 5; more.textContent = wShowAll ? '閉じる' : `すべて表示 (${desc.length})`;
 }
@@ -1476,7 +1492,7 @@ function renderSound() {
 $('#sPlay').onclick = () => { settings.sound.on = !settings.sound.on; persist(); audio.prime(); audio.apply(); armSleep(); renderSound(); if (settings.sound.on) ripple.burst(2); };
 $('#beatSeg').querySelectorAll('button').forEach(b => b.onclick = () => { settings.sound.beat = Number(b.dataset.beat); persist(); audio.apply(); renderSound(); });
 $('#layerToggle').onchange = e => { settings.sound.layerWater = e.target.checked; persist(); audio.apply(); };
-$('#volInput').oninput = e => { settings.sound.volume = Number(e.target.value); $('#volPct').textContent = settings.sound.volume + '%'; persist(); audio.apply(); };
+$('#volInput').oninput = e => { settings.sound.volume = Number(e.target.value); $('#volPct').textContent = settings.sound.volume + '%'; save('ft.settings', settings); audio.apply(); };
 $('#chimeToggle').onchange = e => { settings.sound.chime = e.target.checked; persist(); if (e.target.checked) audio.chime('stage'); };
 $('#sleepRow').onclick = () => { const steps = [0, 15, 30, 60]; settings.sound.sleep = steps[(steps.indexOf(settings.sound.sleep) + 1) % steps.length]; persist(); armSleep(); renderSound(); };
 // iOS needs a user gesture before any sound: create the context on the first tap so later chimes can play
@@ -1523,7 +1539,7 @@ function renderMed() {
   const total = meds.reduce((a, m) => a + m.min, 0);
   $('#medStats').innerHTML = meds.length ? `今週 <b>${week.length}回 · ${week.reduce((a, m) => a + m.min, 0)}分</b> · これまで <b>${meds.length}回 · ${total}分</b>` : '静かに座る時間を、記録に残していきます';
   const desc = [...meds].sort((a, b) => b.ts - a.ts); const shown = medShowAll ? desc : desc.slice(0, 5);
-  $('#medList').innerHTML = shown.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>${fmtDate(m.ts)} ${pad(new Date(m.ts).getHours())}:${pad(new Date(m.ts).getMinutes())}<span class="src">${br ? (br.kind === 'relax' ? 'リラックス' : 'マインドフルネス') + ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span></span><b>${m.min}分</b><button class="del" data-id="${m.id}" aria-label="削除">×</button></li>`; }).join('');
+  $('#medList').innerHTML = shown.map(m => { const br = BREATHS.find(b => b.id === m.breath); return `<li><span>${fmtDate(m.ts)} ${pad(new Date(m.ts).getHours())}:${pad(new Date(m.ts).getMinutes())}<span class="src">${br ? (br.kind === 'relax' ? 'リラックス' : 'マインドフルネス') + ' · ' + br.label : ''}${m.completed === false ? ' · 早めに終了' : ''}</span></span><b>${esc(m.min)}分</b><button class="del" data-id="${esc(m.id)}" aria-label="削除">×</button></li>`; }).join('');
   $('#medList').querySelectorAll('.del').forEach(b => b.onclick = async () => { if (await ask('この瞑想の記録を削除しますか？', '削除')) { meds = meds.filter(m => m.id !== b.dataset.id); save('ft.meditations', meds); renderMed(); renderCalendar(); } });
   const more = $('#medMore'); more.hidden = desc.length <= 5; more.textContent = medShowAll ? '閉じる' : `すべての記録 (${desc.length})`;
   $('#medEmpty').hidden = meds.length > 0;
@@ -1538,7 +1554,7 @@ function startMed() {
   med = { t0: performance.now(), acc: 0, paused: false, dur: medPref.min * 60000, breath, lastPhase: -1, lastCycle: -1, wake: null, done: false };
   audio.prime(); audio.bowl(330, 0.14, 8);
   const ov = $('#medOverlay'); ov.hidden = false; $('#medDone').hidden = true; $('#medCtl').hidden = false; $('#breath').hidden = false; $('#medTime').hidden = false;
-  requestAnimationFrame(() => ov.classList.add('show'));
+  requestAnimationFrame(() => { ov.classList.add('show'); $('#medPause').focus({ preventScroll: true }); });
   $('#medSub').textContent = breath.phases ? breath.label : '呼吸に意識を向けて';
   $('#medPause').textContent = '一時停止';
   keepAwake().then(w => { if (med) med.wake = w; });
@@ -1572,7 +1588,7 @@ function medFrame(now) {
 const ease = x => x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 function finishMed(completed) {
   if (!med) return; med.done = true; cancelAnimationFrame(med.raf);
-  const mins = Math.round(medElapsed(performance.now()) / 60000);
+  const mins = Math.round(Math.min(medElapsed(performance.now()), med.dur) / 60000);
   try { med.wake && med.wake.release(); } catch {}
   if (completed) { audio.bowl(330, 0.16, 9); setTimeout(() => audio.bowl(330, 0.14, 9), 2600); setTimeout(() => audio.bowl(330, 0.12, 9), 5200); ripple.burst(4); }
   if (mins >= 1) { meds.push({ id: String(Date.now()), ts: Date.now(), min: mins, breath: med.breath.id, kind: med.breath.kind, completed }); save('ft.meditations', meds); renderCalendar(); }
@@ -1617,21 +1633,29 @@ function backupText() { const data = { app: 'ZENTOKI', version: 1, exportedAt: n
 function restoreFrom(text) {
   let d; try { d = JSON.parse(text); } catch { toast('読み込めませんでした。書き出したテキストか確認してください'); return false; }
   if (!d || d.app !== 'ZENTOKI') { toast('ZENTOKIのバックアップではないようです'); return false; }
-  const mergeById = (cur, inc) => { const ids = new Set(cur.map(x => x.id)); return cur.concat((inc || []).filter(x => x && x.id && !ids.has(x.id))); };
+  const num = (v, lo, hi) => typeof v === 'number' && isFinite(v) && v >= lo && v <= hi;
+  const idOk = v => (typeof v === 'string' || typeof v === 'number') && String(v).length <= 64;
+  const now = Date.now() + 86400000, y2000 = 946684800000;
+  const cleanHist = (inc) => (Array.isArray(inc) ? inc : []).filter(r => r && idOk(r.id) && num(r.start, y2000, now) && num(r.end, y2000, now) && r.end > r.start && num(r.goal, 1, 240)).map(r => ({ id: String(r.id), start: r.start, end: r.end, goal: r.goal, preset: typeof r.preset === 'string' ? r.preset.slice(0, 16) : '' }));
+  const cleanW = (inc) => (Array.isArray(inc) ? inc : []).filter(w => w && idOk(w.id) && num(w.ts, y2000, now) && num(w.kg, 20, 300)).map(w => ({ id: String(w.id), ts: w.ts, kg: Math.round(w.kg * 10) / 10, src: w.src === 'health' ? 'health' : 'manual' }));
+  const cleanM = (inc) => (Array.isArray(inc) ? inc : []).filter(m => m && idOk(m.id) && num(m.ts, y2000, now) && num(m.min, 1, 600)).map(m => ({ id: String(m.id), ts: m.ts, min: Math.round(m.min), breath: BREATHS.some(b => b.id === m.breath) ? m.breath : 'none', kind: m.kind === 'relax' ? 'relax' : 'mind', completed: m.completed !== false }));
+  const mergeById = (cur, inc) => { const ids = new Set(cur.map(x => String(x.id))); return cur.concat(inc.filter(x => !ids.has(String(x.id)))); };
   let n = 0;
-  if (Array.isArray(d['ft.history'])) { const m = mergeById(history, d['ft.history']); n += m.length - history.length; history = m; }
-  if (Array.isArray(d['ft.weights'])) { const m = mergeById(weights, d['ft.weights']); n += m.length - weights.length; weights = m; }
-  if (Array.isArray(d['ft.meditations'])) { const m = mergeById(meds, d['ft.meditations']); n += m.length - meds.length; meds = m; }
-  if (d['ft.wgoal'] && typeof d['ft.wgoal'] === 'object' && !wgoal.goal) wgoal = Object.assign(wgoal, d['ft.wgoal']);
-  if (d['ft.state'] && d['ft.state'].start && !state.start) { state.start = d['ft.state'].start; state.preset = d['ft.state'].preset || state.preset; state.customHours = d['ft.state'].customHours || state.customHours; }
+  const h = cleanHist(d['ft.history']); { const m = mergeById(history, h); n += m.length - history.length; history = m; }
+  const w = cleanW(d['ft.weights']); { const m = mergeById(weights, w); n += m.length - weights.length; weights = m; }
+  const md = cleanM(d['ft.meditations']); { const m = mergeById(meds, md); n += m.length - meds.length; meds = m; }
+  const g = d['ft.wgoal']; if (g && typeof g === 'object' && !wgoal.goal) wgoal = { start: num(g.start, 20, 300) ? g.start : null, goal: num(g.goal, 20, 300) ? g.goal : null, height: num(g.height, 100, 250) ? g.height : null };
+  const mp = d['ft.medPref']; if (mp && typeof mp === 'object') { if (MED_DURS.includes(mp.min)) medPref.min = mp.min; if (BREATHS.some(b => b.id === mp.breath)) { medPref.breath = mp.breath; medPref.kind = BREATHS.find(b => b.id === mp.breath).kind; } save('ft.medPref', medPref); }
+  const st = d['ft.settings']; if (st && typeof st === 'object') { if (typeof st.notify === 'boolean') settings.notify = st.notify; if (typeof st.stageNotify === 'boolean') settings.stageNotify = st.stageNotify; if (typeof st.ripple === 'boolean') settings.ripple = st.ripple; if (st.sound && typeof st.sound === 'object') { if (SOUNDS.some(x => x.id === st.sound.mode)) settings.sound.mode = st.sound.mode; if (num(st.sound.volume, 0, 100)) settings.sound.volume = st.sound.volume; if (typeof st.sound.chime === 'boolean') settings.sound.chime = st.sound.chime; if ([2, 6, 10, 16].includes(st.sound.beat)) settings.sound.beat = st.sound.beat; } }
+  const stt = d['ft.state']; if (stt && typeof stt === 'object' && num(stt.start, y2000, now) && !state.start) { state.start = stt.start; if (PRESETS.some(p => p.id === stt.preset)) state.preset = stt.preset; if (num(stt.customHours, 1, 120)) state.customHours = stt.customHours; markPassed(); }
   save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist();
-  renderPresets(); renderTimer.lastIdx = -2; renderAll(); renderWeight(); renderMed(); renderCalendar(); if (state.start) startTick();
+  renderPresets(); renderTimer.lastIdx = -2; renderAll(); renderWeight(); renderMed(); renderCalendar(); renderSound(); ripple.set(settings.ripple); if (state.start) startTick();
   toast(n ? `${n}件の記録を読み込みました` : '新しい記録はありませんでした（重複は除外）');
   return true;
 }
 $('#exportBtn').onclick = () => {
   const blob = new Blob([backupText()], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zentoki-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `zentoki-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   toast('書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください');
 };
 $('#copyBtn').onclick = async () => { try { await navigator.clipboard.writeText(backupText()); toast('コピーしました。メモなどに貼り付けて保存してください'); } catch { toast('コピーできませんでした'); } };
@@ -1639,7 +1663,7 @@ $('#importBtn').onclick = () => { $('#settingsDialog').close(); $('#pasteDialog'
 $('#pasteCancel').onclick = () => $('#pasteDialog').close();
 $('#pasteOk').onclick = () => { const t = $('#pasteArea').value.trim(); if (!t) { $('#importFile').click(); return; } if (restoreFrom(t)) { $('#pasteArea').value = ''; $('#pasteDialog').close(); } };
 $('#importFile').onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (restoreFrom(await f.text())) $('#pasteDialog').close(); };
-$('#clearBtn').onclick = async () => { $('#settingsDialog').close(); if (await ask('断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。', '削除')) { history = []; weights = []; meds = []; save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); persist(); renderHistory(); renderWeight(); renderMed(); renderCalendar(); toast('削除しました'); } };
+$('#clearBtn').onclick = async () => { $('#settingsDialog').close(); if (await ask('断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。', '削除')) { history = []; weights = []; meds = []; wgoal = { start:null, goal:null, height:null }; save('ft.history', history); save('ft.weights', weights); save('ft.meditations', meds); save('ft.wgoal', wgoal); persist(); renderHistory(); renderWeight(); renderMed(); renderCalendar(); toast('削除しました'); } };
 
 // ---------- policy ----------
 const POLICY_JA = `<p><b>データについて</b><br>断食・瞑想・体重の記録と設定は、お使いの端末のブラウザ内にのみ保存されます。ZENTOKIはサーバーを持たず、記録を外部に送信することはありません。アカウント登録も不要です。</p>
