@@ -623,7 +623,7 @@ dialog .row button.danger{color:rgba(255,120,120,.9)}
     <li><i></i><span><b>すべての呼吸法</b>ボックス、4-8 / 5-10 / 6-12 / 7-14 のリラックス呼吸</span></li>
     <li><i></i><span><b>これからの追加機能</b>ガイド音声、ヘルスケア同期、週の振り返り</span></li>
   </ul>
-  <div class="pw-price" id="plusPrice">¥1,500<small>買い切り · 追加料金なし</small></div>
+  <div class="pw-price" id="plusPrice">¥500<small>買い切り · 追加料金なし</small></div>
   <div class="row" style="margin-top:16px"><button class="ok" id="plusBuy">購入する</button></div>
   <div class="row" style="margin-top:8px"><button id="plusRestore">購入を復元</button><button id="plusKeyBtn">ライセンスキー</button></div>
   <p class="hint" id="plusManual" hidden style="margin-top:14px">お支払いはAirペイの決済ページで行います。お支払い後に届く「支払完了メール」を <a id="plusMail" href="#">こちら</a> に転送してください。ライセンスキーを返信します（通常24時間以内）。</p>
@@ -848,7 +848,7 @@ if (settings.sound.on === undefined) settings.sound.on = false;
 
 // ZENTOKI Plus: config + state (UI handlers live further down)
 const PLUS = {
-  price: '¥1,500',
+  price: '¥500',
   // paymentLink: Airペイ オンライン決済の決済リンク（または Stripe Payment Link）。verifyUrl: worker/ の URL。
   // manualKey: true = 決済後にキーをメールで送る運用（Airペイ）。false = Stripe → thanks.html で自動発行。
   web: { paymentLink: '', verifyUrl: '', manualKey: true, supportEmail: '' },

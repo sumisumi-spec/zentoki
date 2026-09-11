@@ -14,7 +14,7 @@ App Store Connect → ZENTOKI → 「App 情報」「バージョン情報」に
 | プライマリカテゴリ | ヘルスケア/フィットネス（Health & Fitness） |
 | セカンダリカテゴリ | ライフスタイル（Lifestyle） |
 | 年齢制限 | 4+（医療・治療に関する情報: 「まれ/軽度」を選ぶと 12+ になるので「なし」。アプリは目安を表示するだけで医療的助言はしない） |
-| 価格 | 無料（App 内課金あり: ZENTOKI Plus 1,500 円 非消耗型） |
+| 価格 | 無料（App 内課金あり: ZENTOKI Plus 500 円 非消耗型） |
 | 著作権 | `© 2026 【事業者名】` |
 | サポート URL | `https://sumisumi-spec.github.io/zentoki/` |
 | プライバシーポリシー URL | `https://sumisumi-spec.github.io/zentoki/privacy.html` |
@@ -68,7 +68,7 @@ ZENTOKI（ゼントキ）は、断食と瞑想のための、黒く静かなタ�
 ・できなかった日を責めない。続けることより、戻ってくることを
 ・日本語 / English
 
-■ ZENTOKI Plus（買い切り 1,500 円）
+■ ZENTOKI Plus（買い切り 500 円）
 サウンド 6 種（波音・森・焚き火・ドローン・バイノーラル・メロディ）と、ボックス / 4-8 / 5-10 / 6-12 / 7-14 の呼吸法、これから追加される機能が使えるようになります。断食タイマー・記録・体重・バックアップは、ずっと無料です。
 
 ※ ZENTOKI は医療機器ではなく、診断や治療、医療的助言を行うものではありません。持病のある方、妊娠中・授乳中の方、服薬中の方は、断食を始める前に医師にご相談ください。
@@ -109,7 +109,7 @@ WHAT WE CARE ABOUT
 • No guilt for the days you skipped. Coming back matters more than never stopping
 • Japanese and English
 
-ZENTOKI PLUS (one-time ¥1,500)
+ZENTOKI PLUS (one-time ¥500)
 Unlocks six sounds (ocean, forest, fire, drone, binaural, melody), the box / 4-8 / 5-10 / 6-12 / 7-14 breathing patterns, and everything added next. The fasting timer, log, weight and backup stay free forever.
 
 ZENTOKI is not a medical device and does not diagnose, treat or give medical advice. If you have a medical condition, are pregnant or breastfeeding, or take medication, talk to your doctor before fasting.
