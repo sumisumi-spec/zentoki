@@ -864,7 +864,7 @@ const EN = {
   '読み込めませんでした。書き出したテキストか確認してください':'Could not read it. Make sure it is exported text','ZENTOKIのバックアップではないようです':'This does not look like a ZENTOKI backup','%1件の記録を読み込みました':'%1 records imported','新しい記録はありませんでした（重複は除外）':'Nothing new to import (duplicates skipped)','書き出しました。ダウンロードが始まらない場合は「テキストをコピー」を使ってください':'Exported. If the download does not start, use “Copy as text”','コピーしました。メモなどに貼り付けて保存してください':'Copied. Paste it somewhere safe','コピーできませんでした':'Could not copy','断食・瞑想・体重の記録をすべて削除します。よろしいですか？ 元に戻せません。':'Delete all fasting, meditation and weight records? This cannot be undone.','削除しました':'Deleted',
   '通知はアプリを閉じていても、目標やステージの時刻に届きます。':'Notifications arrive at goal and stage times even when the app is closed.','音はアプリを開いている間だけ流れます。画面ロックや他のアプリへの切り替えで止まります。':'Sound plays while the app is open. It stops when the screen locks or you switch apps.',
   'お支払いはAirペイの決済ページで行います。お支払い後に届く「支払完了メール」を':'Payment is handled on the AirPay checkout page. After paying, forward the payment-confirmation email to','に転送してください。ライセンスキーを返信します（通常24時間以内）。':'and we will reply with your licence key (usually within 24 hours).','こちら':'this address','（Airペイの支払完了メールをこのまま転送してください）':'(Please forward the AirPay payment-confirmation email as is.)','お支払い後、支払完了メールを転送してください。キーをお送りします':'After paying, forward the confirmation email and we will send your key','メールや購入完了ページで受け取ったキー（ZK- で始まる文字列）を入力してください。':'Enter the key you received by email or on the purchase page (it starts with ZK-).',
-  '周波数':'Frequency','周波数の強さ':'Tone strength','低':'Low','普通':'Normal','高':'High','集中':'Focus','睡眠':'Sleep','深い眠り':'Deep sleep','欠けゆく月':'Waning Moon','光の届く深さ':'Where Light Reaches','洞窟の滝':'Cave Falls','聖夜':'Christmas Eve','砂漠の星河':'Desert Milky Way','音量を下げる':'Volume down','音量を上げる':'Volume up',
+  '周波数':'Frequency','周波数の強さ':'Tone strength','低':'Low','普通':'Normal','高':'High','集中':'Focus','睡眠':'Sleep','深い眠り':'Deep sleep','目覚め':'Wake','エネルギー':'Energy','浮かぶ泡':'Rising Bubbles','火の山':'Mountain of Fire','欠けゆく月':'Waning Moon','光の届く深さ':'Where Light Reaches','洞窟の滝':'Cave Falls','聖夜':'Christmas Eve','砂漠の星河':'Desert Milky Way','音量を下げる':'Volume down','音量を上げる':'Volume up',
   '情景と、ひとつの周波数。左右で少し違う高さの音の差が、うなりとして感じられます。':'One scene, one frequency. The small difference between the left and right tones is felt as a slow beat.','イヤホンで聴いてください。':'Listen with earphones.',
   '効果の感じ方には個人差があります。光や音の刺激に敏感な方、てんかんの既往がある方は使用を控えてください。':'Effects vary from person to person. Avoid if you are sensitive to light or sound, or have a history of epilepsy.',
   'キーの形式が違います':'That key format is not right','この版ではライセンスキーを使えません':'Licence keys are not available in this build','ZENTOKI Plus が有効になりました':'ZENTOKI Plus is active','このキーは無効になっています':'This key has been revoked','キーが確認できませんでした':'Could not verify the key','通信できませんでした。あとでもう一度お試しください':'No connection. Please try again later','商品を読み込めませんでした':'Could not load the product','購入を完了できませんでした':'Purchase could not be completed','購入を復元しました':'Purchase restored','復元できる購入が見つかりませんでした':'No purchase to restore','復元できませんでした':'Could not restore','準備中です':'Coming soon',
@@ -924,7 +924,7 @@ const PLUS = {
   // manualKey: true = 決済後にキーをメールで送る運用（Airペイ）。false = Stripe → thanks.html で自動発行。
   web: { paymentLink: 'https://web.online.airpayment.jp/payment?planId=PLqB15OEGREuebjqsd', verifyUrl: '', manualKey: true, supportEmail: '' },
   ios: { rcApiKey: '', entitlement: 'plus', product: 'app.zentoki.plus' },
-  sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody', 'eve', 'cave', 'stars'],
+  sounds: ['ocean', 'forest', 'fire', 'drone', 'binaural', 'melody', 'eve', 'cave', 'stars', 'volcano'],
   breaths: ['box', '4-8', '5-10', '6-12', '7-14'],
 };
 // Web billing turns on only when BOTH the payment link and the key-verify worker are set (a link without a way to activate would take money for nothing).
@@ -1417,7 +1417,7 @@ const audio = (() => {
       const l = ctx.createOscillator(); l.frequency.value = 0.04 + i * 0.013; const lg = ctx.createGain(); lg.gain.value = v * 0.45; l.connect(lg); lg.connect(g.gain);
       o.connect(g); g.connect(lp); g.connect(verb); o.start(); l.start(); nodes.push(o, g, l, lg);
     });
-    if (sc.layer) { const lg = ctx.createGain(); lg.gain.value = sc.layerGain || 0.35; lg.connect(out); nodes.push(lg); ({ ocean: buildOcean, stream: buildWater, forest: buildForest, rain: buildRain }[sc.layer] || (() => {}))(lg, nodes); }
+    if (sc.layer) { const lg = ctx.createGain(); lg.gain.value = sc.layerGain || 0.35; lg.connect(out); nodes.push(lg); ({ ocean: buildOcean, stream: buildWater, forest: buildForest, rain: buildRain, fire: buildFire }[sc.layer] || (() => {}))(lg, nodes); }
   }
   const ambKey = () => settings.sound.mode === 'binaural' ? `binaural:${settings.sound.beat}:${settings.sound.layerWater ? 1 : 0}` : (SCENES.some(x => x.id === settings.sound.mode) ? `scene:${settings.sound.mode}:${settings.sound.freq}` : settings.sound.mode);
   function startAmb(mode) {
@@ -1779,6 +1779,8 @@ const SCENES = [
   { id:'cave',  hz:6,  cat:'瞑想', ja:'洞窟の滝', en:'Cave Falls', desc:'岩の奥に落ちる水と、差し込む光。呼吸だけが残る場所。', descEn:'Water falling deep in the rock, and one shaft of light. A place where only breath remains.', carrier:150, lp:800, pad:[[98,.05],[146.8,.04],[196,.03],[293.7,.015]], layer:'stream', layerGain:.28, img:'assets/scenes/cave.jpg' },
   { id:'eve',   hz:7,  cat:'睡眠', ja:'聖夜', en:'Christmas Eve', desc:'琥珀色のキャンドルの下で。今日をそっと閉じるための、内省的なトーン。', descEn:'Under amber candlelight. An inward tone for closing the day gently.', carrier:175, lp:900, pad:[[104,.07],[130.9,.045],[155.3,.04],[247,.03],[370,.02],[415.3,.015]] },
   { id:'stars', hz:3,  cat:'深い眠り', ja:'砂漠の星河', en:'Desert Milky Way', desc:'砂丘の上に、天の川。何も考えなくていい夜へ。', descEn:'The Milky Way rising over dunes. Into a night where nothing needs thinking.', carrier:120, sub:40, lp:500, pad:[[65.4,.06],[98,.04],[130.8,.03],[196,.015]], img:'assets/scenes/stars.jpg' },
+  { id:'bubbles', hz:14, cat:'目覚め', ja:'浮かぶ泡', en:'Rising Bubbles', desc:'光へ向かって、泡がのぼっていく。朝、頭をすっと切り替えるための軽い音。', descEn:'Bubbles climbing toward the light. A light tone for switching your head on in the morning.', carrier:220, lp:1400, pad:[[164.8,.05],[220,.04],[329.6,.03],[440,.015]], layer:'stream', layerGain:.22, img:'assets/scenes/bubbles.jpg' },
+  { id:'volcano', hz:40, cat:'エネルギー', ja:'火の山', en:'Mountain of Fire', desc:'噴き上がる火と、流れる溶岩。体の奥から力を引き出したいときに。', descEn:'Fire rising and lava flowing. For drawing strength up from deep inside.', carrier:200, sub:50, lp:1100, pad:[[73.4,.06],[110,.05],[146.8,.035],[220,.02]], layer:'fire', layerGain:.3, img:'assets/scenes/volcano.jpg' },
 ];
 const sName = x => lang === 'en' ? x.en.charAt(0) + x.en.slice(1).toLowerCase() : x.ja;
 const sSub = x => lang === 'en' ? x.ja : x.en;
